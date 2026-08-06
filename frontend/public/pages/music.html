@@ -58,7 +58,7 @@
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">Mu51c</h1>
-      <div class="subtitle">Search millions of tracks — tap to play</div>
+      <div class="subtitle">100 top tracks + search anything — tap to play</div>
     </div>
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off">
@@ -86,6 +86,7 @@
     const trackList = $('#trackList'), stateMsg = $('#stateMsg');
     const audio = $('#audio'), player = $('#player');
     let current = null;
+    let DEFAULT_SONGS = [];
 
     function jsonp(term) {
       return new Promise((resolve, reject) => {
@@ -152,10 +153,17 @@
       catch { stateMsg.textContent = 'Search failed, try again.'; stateMsg.style.display = 'block'; }
     }
     $('#searchForm').addEventListener('submit', e => { e.preventDefault(); clearTimeout(timer); doSearch($('#searchInput').value); });
-    $('#searchInput').addEventListener('input', e => { clearTimeout(timer); timer = setTimeout(() => doSearch(e.target.value), 450); });
+    $('#searchInput').addEventListener('input', e => {
+      clearTimeout(timer);
+      if (!e.target.value.trim()) { render(DEFAULT_SONGS); return; }
+      timer = setTimeout(() => doSearch(e.target.value), 450);
+    });
 
-    // seed with something to listen to
-    doSearch('lofi beats');
+    // default library of 100 songs
+    fetch('../data/songs.json')
+      .then(r => r.json())
+      .then(data => { DEFAULT_SONGS = data; if (!$('#searchInput').value.trim()) render(DEFAULT_SONGS); })
+      .catch(() => { stateMsg.textContent = 'Search for an artist or a song.'; });
   </script>
 
   <script>
