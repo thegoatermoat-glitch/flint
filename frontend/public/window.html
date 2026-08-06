@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flint</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="./scramjet/scramjet.all.js" defer></script>
+    
+    <script type="module">
+        import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
+        window.BareMux = BareMux;
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <div class="wisp-settings-modal hidden" id="wisp-settings-modal">
+        <div class="settings-card">
+            
+            <div class="settings-header">
+                <h2><i class="fa-solid fa-sliders"></i> Flint Settings</h2>
+                <button class="close-btn" id="close-wisp-modal" aria-label="Close Settings">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="settings-body">
+                <nav class="settings-sidebar">
+                    <div class="sidebar-item active" data-pane="pane-network">
+                        <i class="fa-solid fa-network-wired"></i> Network
+                    </div>
+                    <div class="sidebar-item" data-pane="pane-search">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search
+                    </div>
+                    <div class="sidebar-item" data-pane="pane-prefs">
+                        <i class="fa-solid fa-gear"></i> Preferences
+                    </div>
+                </nav>
+
+                <div class="settings-content">
+                    
+                    <div class="settings-pane" id="pane-network">
+                        <div class="section-title">Proxy Servers</div>
+                        <div class="server-list" id="server-list"></div>
+                        
+                        <div class="section-title">Add Custom Server</div>
+                        <div class="custom-input-group">
+                            <input type="text" id="custom-wisp-input" placeholder="wss://your-wisp-server.com/wisp/">
+                            <button id="save-custom-wisp"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="settings-pane hidden" id="pane-search">
+                        <div class="settings-group">
+                            <div class="settings-row">
+                                <div class="settings-label">
+                                    <span>Search Engine</span>
+                                    <small>Choose your address bar search engine</small>
+                                </div>
+                                <select id="search-engine-select" class="settings-select">
+                                    <option value="https://search.brave.com/search?q=">Brave</option>
+                                    <option value="https://www.google.com/search?q=">Google</option>
+                                    <option value="https://www.bing.com/search?q=">Bing</option>
+                                    <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-pane hidden" id="pane-prefs">
+                        <div class="settings-group">
+                            <div class="settings-row">
+                                <div class="settings-label">
+                                    <span>Startup Behavior</span>
+                                    <small>Create a new tab on launch</small>
+                                </div>
+                                <div class="toggle-switch active" id="startup-tab-toggle">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> </div> <div class="settings-footer">
+                Configuration saves automatically to local storage.
+            </div>
+        </div> </div> </body>
+
+</html>

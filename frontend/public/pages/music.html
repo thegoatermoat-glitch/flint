@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-base: #121212;
+            --bg-panel: #1e1e1e;
+            --bg-hover: #2a2a2a;
+            --accent: #007bff;
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .player-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-panel);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .search-wrapper {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: var(--bg-base);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            padding: 0 20px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .results-area {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .track-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-base);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .track-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .track-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .track-title {
+            font-weight: 500;
+        }
+
+        .track-artist {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .playback-controls {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .now-playing-text {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .control-buttons i {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 16px;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        .control-buttons i:hover, 
+        .control-buttons i.active {
+            color: var(--text-main);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="header">
+            <i class="fa-solid fa-compact-disc"></i>
+            <span>Music</span>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search tracks or artists...">
+            <button onclick="executeSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="results-area" id="resultsContainer">
+            </div>
+
+        <div class="playback-controls">
+            <div class="now-playing-text" id="nowPlaying">Ready to play</div>
+            <div class="control-buttons">
+                <i class="fa-solid fa-backward-step"></i>
+                <i class="fa-solid fa-circle-play" id="playBtn" onclick="togglePlayback()"></i>
+                <i class="fa-solid fa-forward-step"></i>
+            </div>
+        </div>
+
+        <audio id="coreAudio"></audio>
+    </div>
+
+    <script>
+        const API_BASE = "https://us-west.monochrome.tf";
+        const audioElement = document.getElementById('coreAudio');
+        const playBtnIcon = document.getElementById('playBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const nowPlayingDisplay = document.getElementById('nowPlaying');
+
+        // Handles the search request
+        async function executeSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (!query.trim()) return;
+
+            resultsContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 10px;">Searching...</div>';
+
+            try {
+                // Monochrome API search endpoint structure
+                const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                renderResults(data.tracks || data); 
+                
+            } catch (error) {
+                console.error("API Request Failed:", error);
+                resultsContainer.innerHTML = `<div style="color: #ff4d4d; padding: 10px;">
+                    Connection failed. CORS or rate-limiting might be active on this node.
+                </div>`;
+            }
+        }
+
+        // Renders the JSON payload into the UI
+        function renderResults(tracks) {
+            resultsContainer.innerHTML = '';
+
+            if (!tracks || tracks.length === 0) {
+                resultsContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 10px;">No results found</div>';
+                return;
+            }
+
+            tracks.forEach(track => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'track-item';
+                
+                // Adapting to standard metadata keys (title/name, artist)
+                const title = track.title || track.name || "Unknown Title";
+                const artist = track.artist || "Unknown Artist";
+
+                trackElement.innerHTML = `
+                    <div class="track-info">
+                        <span class="track-title">${title}</span>
+                        <span class="track-artist">${artist}</span>
+                    </div>
+                    <i class="fa-solid fa-play" style="color: var(--text-muted);"></i>
+                `;
+                
+                trackElement.onclick = () => loadAndPlay(track, title);
+                resultsContainer.appendChild(trackElement);
+            });
+        }
+
+        // Fetches the stream URL and starts playback
+        async function loadAndPlay(track, title) {
+            nowPlayingDisplay.innerText = `Buffering: ${title}...`;
+            
+            try {
+                // Monochrome stream fetching logic
+                const response = await fetch(`${API_BASE}/track/${track.id}/stream`);
+                const streamData = await response.json();
+                
+                if (streamData.url) {
+                    audioElement.src = streamData.url;
+                    audioElement.play();
+                    nowPlayingDisplay.innerText = title;
+                    playBtnIcon.className = "fa-solid fa-circle-pause active";
+                }
+            } catch (error) {
+                console.error("Stream Fetch Failed:", error);
+                nowPlayingDisplay.innerText = "Error loading stream";
+            }
+        }
+
+        // Controls play/pause state
+        function togglePlayback() {
+            if (!audioElement.src) return;
+
+            if (audioElement.paused) {
+                audioElement.play();
+                playBtnIcon.className = "fa-solid fa-circle-pause active";
+            } else {
+                audioElement.pause();
+                playBtnIcon.className = "fa-solid fa-circle-play";
+            }
+        }
+
+        // Auto-reset UI when track ends
+        audioElement.addEventListener('ended', () => {
+            playBtnIcon.className = "fa-solid fa-circle-play";
+        });
+    </script>
+</body>
+</html>

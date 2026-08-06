@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Ubuntu",
+    "src": "../pages/vms/ubuntu.html",
+    "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/ubuntu.png",
+    "description": "iframe"
+  },
+  {
+    "name": "Windows XP",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.html",
+    "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.png",
+    "description": "Game Active"
+  }
+]
