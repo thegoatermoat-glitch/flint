@@ -9,11 +9,19 @@ frontend/public/
 That folder is fully self-contained — no build step, no backend. You can host it on any static host.
 
 ## Vercel
-Two options:
+This repo is ready for Vercel with **zero build step** (it's pure static). Pick either:
 
-**A. Deploy this whole repo** — a `vercel.json` is included at the repo root that points Vercel at `frontend/public`. Just import the repo, no settings needed.
+**Option A — Import the whole repo (easiest).**
+A `vercel.json` at the repo root tells Vercel to serve `frontend/public` directly (no install, no build). Just "Add New → Project", import the repo, and deploy. Nothing else to configure.
 
-**B. Deploy only the site folder** — set the Vercel project **Root Directory** to `frontend/public`, Framework Preset = **Other**, and leave Build/Install commands empty.
+**Option B — Point Vercel at the site folder.**
+In the Vercel project settings set **Root Directory = `frontend/public`**, Framework Preset = **Other**. A `vercel.json` inside that folder sets the correct headers. Leave Build & Install commands empty.
+
+Both options set:
+- `cleanUrls: false` (Flint links to explicit `.html` files)
+- `Service-Worker-Allowed: /` on `sw.js` and `Content-Type: application/wasm` on `.wasm`
+
+> If a host insists on a build, `yarn build` (in `frontend/`) just copies `public/` → `build/`, so you can also use Build Command `yarn build` with Output Directory `frontend/build`.
 
 ## Netlify
 - Drag-and-drop the `frontend/public` folder into Netlify, **or**

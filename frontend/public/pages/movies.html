@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Flint - M0v13s</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #1a1a20;
+      --bg-gradient-end: #0d0d12;
+      --panel-bg: rgba(30, 30, 36, 0.6);
+      --panel-hover: rgba(45, 45, 55, 0.8);
+      --text: #fdfdfd;
+      --text-soft: #a1a1aa;
+      --accent: #e2c044;
+      --border-light: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, var(--bg-gradient-start), var(--bg-gradient-end) 80%);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text);
+      overflow-x: hidden;
+      background-color: var(--bg-gradient-end);
+    }
+
+    #particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+    .loader {
+      position: fixed; inset: 0;
+      background: rgba(13, 13, 18, 0.9);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .loader.show { display: flex; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #ffffff; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .main-container {
+      display: flex; flex-direction: column; align-items: center;
+      width: 100%; max-width: 1100px; padding: 60px 20px; z-index: 10;
+    }
+
+    .title-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; gap: 6px; }
+    .title { font-size: 3.2rem; font-weight: 700; letter-spacing: -0.02em; text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+    .subtitle { font-size: 1.05rem; color: var(--text-soft); }
+
+    .search-card {
+      width: 100%; max-width: 540px; margin-bottom: 3rem;
+      border-radius: 40px; background: var(--panel-bg);
+      backdrop-filter: blur(16px); border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-soft); transition: all 0.3s ease;
+    }
+    .search-card:focus-within { border-color: var(--border-hover); transform: translateY(-2px); }
+    .search-box { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 24px; }
+    .search-box input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 1.1rem; padding: 6px 0; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 28px 20px;
+      width: 100%;
+    }
+
+    .card {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+    .card:hover { transform: translateY(-6px); }
+
+    .poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-radius: 14px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .card:hover .poster { border-color: var(--border-hover); box-shadow: 0 14px 30px rgba(0,0,0,0.5); }
+    .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .poster .play {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(13,13,18,0.35); opacity: 0; transition: opacity 0.25s ease; font-size: 2rem; color: #fff;
+    }
+    .card:hover .poster .play { opacity: 1; }
+
+    .card-label {
+      font-size: 0.85rem; color: var(--text-soft); font-weight: 500; text-align: center;
+      width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .empty { color: var(--text-soft); margin-top: 40px; }
+  </style>
+</head>
+
+<body>
+  <canvas id="particles"></canvas>
+  <div class="loader" id="loader"><div class="spinner"></div></div>
+
+  <div class="main-container">
+    <div class="title-section">
+      <h1 class="title">M0v13s</h1>
+      <div class="subtitle">Real titles from Plex — opens in the browser</div>
+    </div>
+
+    <div class="search-card">
+      <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search m0v13s..." autocomplete="off">
+      </form>
+    </div>
+
+    <div class="grid" id="movieList" data-testid="movies-grid"></div>
+    <div class="empty" id="emptyState" style="display:none;">No m0v13s found.</div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const searchInput = $('#searchInput');
+    const movieList = $('#movieList');
+    const emptyState = $('#emptyState');
+    let allMovies = [];
+
+    const openMovie = (url) => {
+      // Open through the Flint proxy browser (parent window.html app)
+      if (window.parent && window.parent !== window) {
+        $('#loader').classList.add('show');
+        window.parent.postMessage({ type: 'navigate', url }, '*');
+      } else {
+        window.location.href = url;
+      }
+    };
+
+    function makeCard(movie) {
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = movie.url;
+      a.dataset.testid = 'movie-card';
+      a.dataset.name = movie.name;
+      a.innerHTML = `
+        <div class="poster">
+          <img loading="lazy" src="${movie.image}"
+               onerror="this.parentElement.innerHTML='<div class=&quot;play&quot; style=&quot;opacity:1&quot;><i class=\\'fa-solid fa-film\\'></i></div>'">
+          <div class="play"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <span class="card-label">${movie.name}</span>`;
+      a.addEventListener('click', e => { e.preventDefault(); openMovie(movie.url); });
+      return a;
+    }
+
+    function render(list) {
+      movieList.innerHTML = '';
+      list.forEach(m => movieList.appendChild(makeCard(m)));
+      emptyState.style.display = list.length ? 'none' : 'block';
+    }
+
+    fetch('../data/movies.json')
+      .then(r => r.json())
+      .then(data => { allMovies = data; render(allMovies); })
+      .catch(() => { emptyState.textContent = 'Failed to load m0v13s :('; emptyState.style.display = 'block'; });
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      render(q ? allMovies.filter(m => m.name.toLowerCase().includes(q)) : allMovies);
+    });
+  </script>
+
+  <script>
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.onresize = resize;
+    let particles = [];
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.alpha = 0.1 + Math.random() * 0.2;
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+      }
+      draw() {
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
