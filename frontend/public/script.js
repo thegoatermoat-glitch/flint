@@ -1,17 +1,20 @@
 const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/wisp/";
 
-const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? localWispUrl;
-
+// List of verified public wisp servers (checked working). The first is the
+// default. localWispUrl is only used if the site is self-hosted with its own
+// wisp backend on /wisp/ (not the case on static hosts like Vercel/Netlify).
 const WISP_SERVERS = [
-    { name: "Wisp 1", url: "wss://glseries.net/wisp/" },
-    { name: "Wisp 2", url: "wss://wisp.rhw.one/wisp/" },
-        { name: "Wisp 3", url: "wss://anura.pro/" },
-        { name: "Wisp 4", url: "wss://lunarrr.eminescusm.ro/w/" },
-        { name: "Wisp 5", url: "wss://dash.goip.de/wisp/" }
+    { name: "Mercury (Official)", url: "wss://wisp.mercurywork.shop/" },
+    { name: "Anura", url: "wss://anura.pro/" },
+    { name: "Lunar", url: "wss://lunarrr.eminescusm.ro/w/" },
+    { name: "GoIP", url: "wss://dash.goip.de/wisp/" }
 ];
 
-// Initialize default proxy server if not set
-if (!localStorage.getItem("proxServer")) {
+const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? WISP_SERVERS[0].url;
+
+// Initialize default proxy server if not set (or migrate off a dead/local one)
+const _savedWisp = localStorage.getItem("proxServer");
+if (!_savedWisp || _savedWisp === localWispUrl || _savedWisp.includes("glseries.net") || _savedWisp.includes("wisp.rhw.one")) {
     localStorage.setItem("proxServer", DEFAULT_WISP);
 }
 

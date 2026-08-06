@@ -1,286 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --bg-base: #121212;
-            --bg-panel: #1e1e1e;
-            --bg-hover: #2a2a2a;
-            --accent: #007bff;
-            --text-main: #ffffff;
-            --text-muted: #b3b3b3;
-        }
-
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .player-container {
-            width: 100%;
-            max-width: 500px;
-            background: var(--bg-panel);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .search-wrapper {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background: var(--bg-base);
-            color: var(--text-main);
-            font-size: 1rem;
-            outline: none;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
-        }
-
-        button {
-            padding: 0 20px;
-            border-radius: 8px;
-            border: none;
-            background: var(--accent);
-            color: white;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .results-area {
-            max-height: 300px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .track-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-base);
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .track-item:hover {
-            background: var(--bg-hover);
-        }
-
-        .track-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .track-title {
-            font-weight: 500;
-        }
-
-        .track-artist {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .playback-controls {
-            border-top: 1px solid #333;
-            padding-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .now-playing-text {
-            font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 200px;
-        }
-
-        .control-buttons i {
-            font-size: 24px;
-            cursor: pointer;
-            margin-left: 16px;
-            color: var(--text-muted);
-            transition: color 0.2s;
-        }
-
-        .control-buttons i:hover, 
-        .control-buttons i.active {
-            color: var(--text-main);
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Flint - Mu51c</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #1a1a20;
+      --bg-gradient-end: #0d0d12;
+      --panel-bg: rgba(30, 30, 36, 0.6);
+      --text: #fdfdfd;
+      --text-soft: #a1a1aa;
+      --accent: #e2c044;
+      --border-light: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at top, var(--bg-gradient-start), var(--bg-gradient-end) 80%); z-index:-2; }
+    body { min-height:100vh; display:flex; flex-direction:column; align-items:center; color:var(--text); background:var(--bg-gradient-end); padding-bottom:110px; }
+    #particles { position:fixed; inset:0; z-index:-1; pointer-events:none; }
+    .main-container { display:flex; flex-direction:column; align-items:center; width:100%; max-width:1100px; padding:56px 20px; z-index:10; }
+    .title-section { display:flex; flex-direction:column; align-items:center; margin-bottom:1.8rem; gap:6px; }
+    .title { font-size:3.2rem; font-weight:700; letter-spacing:-0.02em; }
+    .subtitle { font-size:1.05rem; color:var(--text-soft); }
+    .search-card { width:100%; max-width:540px; margin-bottom:2.5rem; border-radius:40px; background:var(--panel-bg); backdrop-filter:blur(16px); border:1px solid var(--border-light); box-shadow:var(--shadow-soft); transition:all .3s; }
+    .search-card:focus-within { border-color:var(--border-hover); transform:translateY(-2px); }
+    .search-box { display:flex; align-items:center; gap:12px; padding:10px 12px 10px 24px; }
+    .search-box input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:1.1rem; padding:6px 0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:26px 20px; width:100%; }
+    .card { display:flex; flex-direction:column; gap:10px; cursor:pointer; }
+    .art { width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; background:var(--panel-bg); border:1px solid var(--border-light); box-shadow:0 8px 22px rgba(0,0,0,.35); position:relative; transition:all .3s; }
+    .card:hover .art { transform:translateY(-6px); border-color:var(--border-hover); box-shadow:0 14px 30px rgba(0,0,0,.5); }
+    .art img { width:100%; height:100%; object-fit:cover; display:block; }
+    .art .play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(13,13,18,.4); opacity:0; transition:opacity .25s; font-size:2rem; color:#fff; }
+    .card:hover .art .play, .card.playing .art .play { opacity:1; }
+    .card.playing .art { border-color:var(--accent); }
+    .t-name { font-size:.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .t-artist { font-size:.8rem; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .state { color:var(--text-soft); margin-top:40px; }
+    .player { position:fixed; left:50%; transform:translateX(-50%); bottom:18px; width:min(680px, calc(100% - 32px)); background:rgba(20,20,26,.92); backdrop-filter:blur(18px); border:1px solid var(--border-hover); border-radius:20px; box-shadow:0 18px 50px rgba(0,0,0,.6); display:flex; align-items:center; gap:14px; padding:12px 18px; z-index:100; transform:translateX(-50%) translateY(140%); transition:transform .35s ease; }
+    .player.show { transform:translateX(-50%) translateY(0); }
+    .player img { width:52px; height:52px; border-radius:10px; object-fit:cover; }
+    .player .meta { flex:1; min-width:0; }
+    .player .p-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .player .p-artist { font-size:.82rem; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .player button { background:var(--accent); color:#141414; border:none; width:44px; height:44px; border-radius:50%; font-size:1.05rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .15s; }
+    .player button:hover { transform:scale(1.08); }
+    .bar { position:absolute; left:0; bottom:0; height:3px; background:var(--accent); width:0%; border-radius:0 0 20px 20px; transition:width .2s linear; }
+  </style>
 </head>
+
 <body>
-
-    <div class="player-container">
-        <div class="header">
-            <i class="fa-solid fa-compact-disc"></i>
-            <span>Music</span>
-        </div>
-
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search tracks or artists...">
-            <button onclick="executeSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </div>
-
-        <div class="results-area" id="resultsContainer">
-            </div>
-
-        <div class="playback-controls">
-            <div class="now-playing-text" id="nowPlaying">Ready to play</div>
-            <div class="control-buttons">
-                <i class="fa-solid fa-backward-step"></i>
-                <i class="fa-solid fa-circle-play" id="playBtn" onclick="togglePlayback()"></i>
-                <i class="fa-solid fa-forward-step"></i>
-            </div>
-        </div>
-
-        <audio id="coreAudio"></audio>
+  <canvas id="particles"></canvas>
+  <div class="main-container">
+    <div class="title-section">
+      <h1 class="title">Mu51c</h1>
+      <div class="subtitle">Search millions of tracks — tap to play</div>
     </div>
+    <div class="search-card">
+      <form class="search-box" id="searchForm" autocomplete="off">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search songs or artists..." autocomplete="off" data-testid="music-search-input">
+      </form>
+    </div>
+    <div class="grid" id="trackList" data-testid="music-grid"></div>
+    <div class="state" id="stateMsg">Try searching for an artist or a song.</div>
+  </div>
 
-    <script>
-        const API_BASE = "https://us-west.monochrome.tf";
-        const audioElement = document.getElementById('coreAudio');
-        const playBtnIcon = document.getElementById('playBtn');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const nowPlayingDisplay = document.getElementById('nowPlaying');
+  <div class="player" id="player" data-testid="music-player">
+    <img id="pArt" alt="">
+    <div class="meta">
+      <div class="p-name" id="pName">—</div>
+      <div class="p-artist" id="pArtist"></div>
+    </div>
+    <button id="playPause" data-testid="music-playpause"><i class="fa-solid fa-pause"></i></button>
+    <div class="bar" id="bar"></div>
+  </div>
+  <audio id="audio"></audio>
 
-        // Handles the search request
-        async function executeSearch() {
-            const query = document.getElementById('searchInput').value;
-            if (!query.trim()) return;
+  <script>
+    const $ = s => document.querySelector(s);
+    const trackList = $('#trackList'), stateMsg = $('#stateMsg');
+    const audio = $('#audio'), player = $('#player');
+    let current = null;
 
-            resultsContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 10px;">Searching...</div>';
+    function jsonp(term) {
+      return new Promise((resolve, reject) => {
+        const cb = 'itcb_' + Math.random().toString(36).slice(2);
+        const s = document.createElement('script');
+        const clean = () => { delete window[cb]; s.remove(); };
+        window[cb] = data => { resolve(data); clean(); };
+        s.onerror = () => { reject(new Error('network')); clean(); };
+        s.src = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=42&callback=${cb}`;
+        document.body.appendChild(s);
+      });
+    }
 
-            try {
-                // Monochrome API search endpoint structure
-                const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const data = await response.json();
-                renderResults(data.tracks || data); 
-                
-            } catch (error) {
-                console.error("API Request Failed:", error);
-                resultsContainer.innerHTML = `<div style="color: #ff4d4d; padding: 10px;">
-                    Connection failed. CORS or rate-limiting might be active on this node.
-                </div>`;
-            }
-        }
+    function art(url, size) { return (url || '').replace('100x100bb', size + 'x' + size + 'bb'); }
 
-        // Renders the JSON payload into the UI
-        function renderResults(tracks) {
-            resultsContainer.innerHTML = '';
+    function play(track, cardEl) {
+      document.querySelectorAll('.card.playing').forEach(c => c.classList.remove('playing'));
+      if (cardEl) cardEl.classList.add('playing');
+      current = track;
+      audio.src = track.previewUrl;
+      audio.play();
+      player.classList.add('show');
+      $('#pArt').src = art(track.artworkUrl100, 200);
+      $('#pName').textContent = track.trackName;
+      $('#pArtist').textContent = track.artistName;
+      $('#playPause').innerHTML = '<i class="fa-solid fa-pause"></i>';
+    }
 
-            if (!tracks || tracks.length === 0) {
-                resultsContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 10px;">No results found</div>';
-                return;
-            }
+    $('#playPause').addEventListener('click', () => {
+      if (audio.paused) { audio.play(); $('#playPause').innerHTML = '<i class="fa-solid fa-pause"></i>'; }
+      else { audio.pause(); $('#playPause').innerHTML = '<i class="fa-solid fa-play"></i>'; }
+    });
+    audio.addEventListener('timeupdate', () => {
+      $('#bar').style.width = audio.duration ? (audio.currentTime / audio.duration * 100) + '%' : '0%';
+    });
+    audio.addEventListener('ended', () => { $('#playPause').innerHTML = '<i class="fa-solid fa-play"></i>'; });
 
-            tracks.forEach(track => {
-                const trackElement = document.createElement('div');
-                trackElement.className = 'track-item';
-                
-                // Adapting to standard metadata keys (title/name, artist)
-                const title = track.title || track.name || "Unknown Title";
-                const artist = track.artist || "Unknown Artist";
+    function render(tracks) {
+      trackList.innerHTML = '';
+      const valid = tracks.filter(t => t.previewUrl);
+      if (!valid.length) { stateMsg.textContent = 'No tracks found.'; stateMsg.style.display = 'block'; return; }
+      stateMsg.style.display = 'none';
+      valid.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.testid = 'music-card';
+        card.innerHTML = `
+          <div class="art">
+            <img loading="lazy" src="${art(t.artworkUrl100, 300)}" alt="">
+            <div class="play"><i class="fa-solid fa-play"></i></div>
+          </div>
+          <div class="t-name">${t.trackName}</div>
+          <div class="t-artist">${t.artistName}</div>`;
+        card.addEventListener('click', () => play(t, card));
+        trackList.appendChild(card);
+      });
+    }
 
-                trackElement.innerHTML = `
-                    <div class="track-info">
-                        <span class="track-title">${title}</span>
-                        <span class="track-artist">${artist}</span>
-                    </div>
-                    <i class="fa-solid fa-play" style="color: var(--text-muted);"></i>
-                `;
-                
-                trackElement.onclick = () => loadAndPlay(track, title);
-                resultsContainer.appendChild(trackElement);
-            });
-        }
+    let timer;
+    async function doSearch(q) {
+      if (!q.trim()) return;
+      stateMsg.textContent = 'Searching...'; stateMsg.style.display = 'block'; trackList.innerHTML = '';
+      try { const data = await jsonp(q); render(data.results || []); }
+      catch { stateMsg.textContent = 'Search failed, try again.'; stateMsg.style.display = 'block'; }
+    }
+    $('#searchForm').addEventListener('submit', e => { e.preventDefault(); clearTimeout(timer); doSearch($('#searchInput').value); });
+    $('#searchInput').addEventListener('input', e => { clearTimeout(timer); timer = setTimeout(() => doSearch(e.target.value), 450); });
 
-        // Fetches the stream URL and starts playback
-        async function loadAndPlay(track, title) {
-            nowPlayingDisplay.innerText = `Buffering: ${title}...`;
-            
-            try {
-                // Monochrome stream fetching logic
-                const response = await fetch(`${API_BASE}/track/${track.id}/stream`);
-                const streamData = await response.json();
-                
-                if (streamData.url) {
-                    audioElement.src = streamData.url;
-                    audioElement.play();
-                    nowPlayingDisplay.innerText = title;
-                    playBtnIcon.className = "fa-solid fa-circle-pause active";
-                }
-            } catch (error) {
-                console.error("Stream Fetch Failed:", error);
-                nowPlayingDisplay.innerText = "Error loading stream";
-            }
-        }
+    // seed with something to listen to
+    doSearch('lofi beats');
+  </script>
 
-        // Controls play/pause state
-        function togglePlayback() {
-            if (!audioElement.src) return;
-
-            if (audioElement.paused) {
-                audioElement.play();
-                playBtnIcon.className = "fa-solid fa-circle-pause active";
-            } else {
-                audioElement.pause();
-                playBtnIcon.className = "fa-solid fa-circle-play";
-            }
-        }
-
-        // Auto-reset UI when track ends
-        audioElement.addEventListener('ended', () => {
-            playBtnIcon.className = "fa-solid fa-circle-play";
-        });
-    </script>
+  <script>
+    const canvas = document.getElementById("particles"), ctx = canvas.getContext("2d");
+    function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; } resize(); onresize=resize;
+    const ps=[]; class P{constructor(){this.r();}r(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.s=Math.random()*2+1;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.a=.1+Math.random()*.2;}u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.r();}d(){ctx.beginPath();ctx.arc(this.x,this.y,this.s,0,7);ctx.fillStyle=`rgba(255,255,255,${this.a})`;ctx.fill();}}
+    for(let i=0;i<50;i++)ps.push(new P());
+    (function a(){ctx.clearRect(0,0,canvas.width,canvas.height);ps.forEach(p=>{p.u();p.d();});requestAnimationFrame(a);})();
+  </script>
 </body>
 </html>
