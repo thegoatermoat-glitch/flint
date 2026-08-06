@@ -16,10 +16,14 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 
 ## Work Done (2026-06)
 - Set up static hosting: replaced CRA start with `node server.js`; site lives in `frontend/public/`.
-- **Fixed reported bug**: `ServiceWorker script evaluation failed`. Root cause = the `ten8mystery/Flint` CDN (scramjet.all/sync/wasm) is now **404 (dead)**. Repointed `sw.js`, `script.js`, `window.html`, `embed.html` to the **bundled local** `/scramjet/` files (byte-identical to the known-good build). SW now registers successfully.
-- Fixed empty content pages: `g.html` (games), `a.html` (apps), `nt.html` (quotes), `vm.html` (VMs) fetched JSON from dead external repo URLs → repointed to the bundled local `../data/*.json`.
-- Added deployment configs: root `vercel.json`, `frontend/public/netlify.toml`, and `DEPLOY.md`.
-- Verified by testing agent (iteration_1): SW registers, all pages/assets serve, grids populate. 100% of in-scope checks pass.
+- **Fixed reported bug**: `ServiceWorker script evaluation failed` (dead `ten8mystery/Flint` CDN) → repointed engine to bundled local files.
+- **Fixed reported bug**: `$scramjetLoadController is not defined` after reload → moved engine files to `/engine/` (outside Scramjet's `/scramjet/` SW proxy prefix which was intercepting them).
+- Fixed empty content pages → repointed to bundled local `../data/*.json`.
+- **Removed Discord** everywhere: New Tab welcome-modal button, shortcut tile, dead CSS, and the Discord app entry in `apps.json`.
+- **Added Movies feature**: `pages/movies.html` poster grid of 40 real movies from Plex free streaming; posters + slugs scraped/validated from `watch.plex.tv` (exact `og:image` posters via `images.plex.tv`); clicking a poster opens the movie in the Flint proxy browser via `postMessage({type:'navigate'})`. Data in `data/movies.json`. Added an "M0v13s" tile right after Games on the New Tab.
+- **Leetspeak ('block word' cloaking)**: category labels/headings/titles → G4m3s, M0v13s, 4pps.
+- **Vercel-ready**: root `vercel.json` (serves `frontend/public`, no build) + inner `frontend/public/vercel.json` (for Root Directory = frontend/public); both set `cleanUrls:false`, `Service-Worker-Allowed:/`, wasm content-type. `yarn build` copies public→build for build-based hosts. Docs in `DEPLOY.md`.
+- Verified by testing agent iteration_1/2/3 — all in-scope checks 100% pass.
 
 ## Known / Out of Scope
 - Live proxy browsing needs a reachable **wisp** websocket server. The bundled public wisp servers are unreachable from this container's network (inherent to the third-party tool); on a real deployment users' browsers may reach them.
