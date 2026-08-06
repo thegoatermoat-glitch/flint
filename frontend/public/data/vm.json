@@ -1,14 +1,8 @@
 [
   {
-    "name": "Ubuntu",
-    "src": "../pages/vms/ubuntu.html",
-    "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/ubuntu.png",
+    "name": "Ubuntu Linux",
+    "src": "https://webvm.io/",
+    "image": "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ubuntu.svg",
     "description": "iframe"
-  },
-  {
-    "name": "Windows XP",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.html",
-    "image": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/windowsxp.png",
-    "description": "Game Active"
   }
 ]
