@@ -73,12 +73,12 @@ self.basePath = self.basePath || basePath;
 
 self.$scramjet = {
     files: {
-        wasm: basePath + "scramjet/scramjet.wasm.wasm",
-        sync: basePath + "scramjet/scramjet.sync.js",
+        wasm: basePath + "engine/scramjet.wasm.wasm",
+        sync: basePath + "engine/scramjet.sync.js",
     }
 };
 
-importScripts(basePath + "scramjet/scramjet.all.js");
+importScripts(basePath + "engine/scramjet.all.js");
 importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js");
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();

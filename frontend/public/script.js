@@ -152,9 +152,9 @@ async function getSharedScramjet() {
     sharedScramjet = new ScramjetController({
         prefix: basePath + "scramjet/",
         files: {
-            wasm: basePath + "scramjet/scramjet.wasm.wasm",
-            all: basePath + "scramjet/scramjet.all.js",
-            sync: basePath + "scramjet/scramjet.sync.js"
+            wasm: basePath + "engine/scramjet.wasm.wasm",
+            all: basePath + "engine/scramjet.all.js",
+            sync: basePath + "engine/scramjet.sync.js"
         }
     });
     
