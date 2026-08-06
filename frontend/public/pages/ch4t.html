@@ -49,6 +49,18 @@
     .composer button:hover { transform:scale(1.05); }
     .composer button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
     .hint { text-align:center; font-size:.72rem; color:var(--text-soft); padding-bottom:4px; }
+
+    .gate { position:fixed; inset:0; z-index:200; background:rgba(9,9,13,.92); backdrop-filter:blur(14px); display:flex; align-items:center; justify-content:center; padding:20px; }
+    .gate.hidden { display:none; }
+    .gate-card { width:100%; max-width:400px; background:var(--panel-bg); border:1px solid var(--border-hover); border-radius:22px; padding:36px 30px; text-align:center; box-shadow:0 24px 60px rgba(0,0,0,.6); }
+    .gate-icon { font-size:2.2rem; color:var(--accent); margin-bottom:14px; }
+    .gate-card h2 { font-size:1.5rem; margin-bottom:6px; }
+    .gate-card p { color:var(--text-soft); font-size:.92rem; margin-bottom:22px; }
+    .gate-card input { width:100%; background:rgba(0,0,0,.25); border:1px solid var(--border-light); color:var(--text); border-radius:14px; padding:14px 16px; outline:none; font-size:1rem; text-align:center; }
+    .gate-card input:focus { border-color:var(--border-hover); }
+    .gate-err { color:#fca5a5; font-size:.8rem; min-height:16px; margin:9px 0 2px; }
+    .gate-card button { width:100%; background:var(--accent); color:#141414; border:none; border-radius:14px; padding:14px; font-weight:700; font-size:1rem; cursor:pointer; margin-top:6px; transition:transform .15s; }
+    .gate-card button:hover { transform:translateY(-2px); }
   </style>
 </head>
 
@@ -74,6 +86,19 @@
     <div class="hint">Messages are public and disappear after ~12 hours. Be nice 🙂</div>
   </div>
 
+  <div class="gate" id="gate" data-testid="chat-gate">
+    <div class="gate-card">
+      <div class="gate-icon"><i class="fa-solid fa-comments"></i></div>
+      <h2>Join the chat</h2>
+      <p>Choose a username to enter the global chat.</p>
+      <form id="gateForm">
+        <input id="gateInput" maxlength="18" placeholder="Your username" autocomplete="off" data-testid="chat-username-input">
+        <div class="gate-err" id="gateErr"></div>
+        <button type="submit" data-testid="chat-join">Enter Chat</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     // ---- Global shared chat via ntfy.sh (keyless, works on every deployment) ----
     const TOPIC = "flint-ch4t-global-live-b8m4k"; // same topic everywhere = one global room
@@ -86,17 +111,16 @@
 
     // ---- identity ----
     const COLORS = ["#e2c044","#7dd3fc","#fca5a5","#86efac","#c4b5fd","#fdba74","#f9a8d4","#67e8f9"];
-    function loadUser() {
-      let u = localStorage.getItem("ch4t_user");
+    function getColor() {
       let c = localStorage.getItem("ch4t_color");
-      if (!u) { u = "anon-" + Math.floor(1000 + Math.random() * 9000); localStorage.setItem("ch4t_user", u); }
       if (!c) { c = COLORS[Math.floor(Math.random() * COLORS.length)]; localStorage.setItem("ch4t_color", c); }
-      return { u, c };
+      return c;
     }
-    let me = loadUser();
-    $('#nameInput').value = me.u;
+    let me = { u: localStorage.getItem("ch4t_user") || null, c: getColor() };
+    $('#nameInput').value = me.u || '';
     $('#nameInput').addEventListener('change', e => {
-      const v = (e.target.value || '').trim().slice(0, 18) || me.u;
+      const v = clean((e.target.value || '').trim()).slice(0, 18);
+      if (v.length < 2) { e.target.value = me.u || ''; return; }
       me.u = v; e.target.value = v; localStorage.setItem("ch4t_user", v);
     });
 
@@ -131,13 +155,16 @@
       addMessage(parsed, obj.time || Math.floor(Date.now() / 1000));
     }
 
-    // ---- load recent history ----
-    fetch(BASE + "/json?poll=1&since=12h")
-      .then(r => r.text())
-      .then(txt => {
-        txt.split('\n').filter(Boolean).forEach(line => { try { handleNtfy(JSON.parse(line)); } catch {} });
-      })
-      .catch(() => {});
+    // ---- start the chat only after a username exists ----
+    function startChat() {
+      fetch(BASE + "/json?poll=1&since=12h")
+        .then(r => r.text())
+        .then(txt => {
+          txt.split('\n').filter(Boolean).forEach(line => { try { handleNtfy(JSON.parse(line)); } catch {} });
+        })
+        .catch(() => {});
+      connect();
+    }
 
     // ---- realtime subscribe ----
     function setStatus(on) {
@@ -152,14 +179,33 @@
       ws.onclose = () => { setStatus(false); setTimeout(connect, 2500); };
       ws.onerror = () => { try { ws.close(); } catch {} };
     }
-    connect();
+
+    // ---- username gate (must create a username before entering) ----
+    const gate = $('#gate');
+    function enterChat(name) {
+      me.u = name;
+      localStorage.setItem("ch4t_user", name);
+      $('#nameInput').value = name;
+      gate.classList.add('hidden');
+      $('#msgInput').focus();
+      startChat();
+    }
+    $('#gateForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const v = clean($('#gateInput').value.trim()).slice(0, 18);
+      if (v.length < 2) { $('#gateErr').textContent = 'Pick a username with at least 2 characters.'; return; }
+      $('#gateErr').textContent = '';
+      enterChat(v);
+    });
+    if (me.u) { gate.classList.add('hidden'); startChat(); }
+    else { setTimeout(() => $('#gateInput').focus(), 120); }
 
     // ---- send ----
     $('#composer').addEventListener('submit', async e => {
       e.preventDefault();
       const inp = $('#msgInput');
       const text = clean(inp.value.trim());
-      if (!text) return;
+      if (!text || !me.u) return;
       inp.value = '';
       const payload = JSON.stringify({ u: me.u, t: text, c: me.c });
       try {
