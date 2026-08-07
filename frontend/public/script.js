@@ -287,6 +287,7 @@ function createTab(makeActive = true) {
         loadStartTime: null
     };
 
+    frame.frame.allow = "camera; microphone; display-capture; fullscreen; autoplay; clipboard-write; speaker-selection";
     frame.frame.src = "/pages/nt.html";
 
     frame.addEventListener("urlchange", (e) => {
