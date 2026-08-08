@@ -39,10 +39,10 @@
   <div class="fallback" id="fallback" data-testid="call-fallback">
     <i class="fa-solid fa-video-slash"></i>
     <p>Couldn't load the in-app call here. You can still join the same global room in a new tab.</p>
-    <a id="fallbackLink" href="https://meet.jit.si/FlintGlobalLoungeX7q2" target="_blank" rel="noopener">Open the call in a new tab</a>
+    <a id="fallbackLink" href="https://vc.autistici.org/FlintGlobalLoungeX7q2" target="_blank" rel="noopener">Open the call in a new tab</a>
   </div>
 
-  <script src="https://meet.jit.si/external_api.js"></script>
+  <script src="https://vc.autistici.org/external_api.js"></script>
   <script>
     const ROOM = "FlintGlobalLoungeX7q2"; // fixed room = one global call for everyone
     const $ = s => document.querySelector(s);
@@ -57,7 +57,7 @@
       if (typeof JitsiMeetExternalAPI === 'undefined') { showFallback(); return; }
       const name = localStorage.getItem('ch4t_user') || ('guest-' + Math.floor(1000 + Math.random() * 9000));
       try {
-        const api = new JitsiMeetExternalAPI('meet.jit.si', {
+        const api = new JitsiMeetExternalAPI('vc.autistici.org', {
           roomName: ROOM,
           parentNode: $('#jitsi'),
           width: '100%',
