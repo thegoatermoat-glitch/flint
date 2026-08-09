@@ -4,6 +4,8 @@ const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://"
 // default. localWispUrl is only used if the site is self-hosted with its own
 // wisp backend on /wisp/ (not the case on static hosts like Vercel/Netlify).
 const WISP_SERVERS = [
+    { name: "Flint Proxy 1", url: "wss://wisp-proxy.emergent.host/api/wisp" },
+    { name: "Flint Proxy 2", url: "wss://wisp-proxy.emergent.host/api/wisp2" },
     { name: "Mercury (Official)", url: "wss://wisp.mercurywork.shop/" },
     { name: "Anura", url: "wss://anura.pro/" },
     { name: "Lunar", url: "wss://lunarrr.eminescusm.ro/w/" },
@@ -14,7 +16,7 @@ const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? WISP_SERVERS[0].url;
 
 // Initialize default proxy server if not set (or migrate off a dead/local one)
 const _savedWisp = localStorage.getItem("proxServer");
-if (!_savedWisp || _savedWisp === localWispUrl || _savedWisp.includes("glseries.net") || _savedWisp.includes("wisp.rhw.one")) {
+if (!_savedWisp || _savedWisp === localWispUrl || _savedWisp.includes("glseries.net") || _savedWisp.includes("wisp.rhw.one") || _savedWisp.includes("wisp-proxy.preview.emergentagent.com")) {
     localStorage.setItem("proxServer", DEFAULT_WISP);
 }
 
