@@ -369,12 +369,24 @@ function appendGame(game) {
       fetch(game.src)
         .then(r => r.text())
         .then(html => {
+          // Inject a <base> so the game's relative asset paths (js/img/wasm)
+          // resolve against its real host instead of the Flint origin.
+          const baseHref = game.src.substring(0, game.src.lastIndexOf('/') + 1);
+          const baseTag = `<base href="${baseHref}">`;
+          if (/<head[^>]*>/i.test(html)) {
+            html = html.replace(/<head[^>]*>/i, m => m + baseTag);
+          } else if (/<html[^>]*>/i.test(html)) {
+            html = html.replace(/<html[^>]*>/i, m => m + baseTag);
+          } else {
+            html = baseTag + html;
+          }
           const doc = iframe.contentDocument || iframe.contentWindow.document;
           doc.open();
           doc.write(html);
           doc.close();
           $('#loader').classList.remove('show');
-        });
+        })
+        .catch(() => $('#loader').classList.remove('show'));
     }
   });
 
