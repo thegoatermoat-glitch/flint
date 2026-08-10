@@ -57,10 +57,21 @@
     </div>
   </div>
 
-  <script src="https://vc.autistici.org/external_api.js"></script>
   <script>
     const ROOM = "FlintGlobalLoungeX7q2"; // fixed room = one global call for everyone
     const $ = s => document.querySelector(s);
+
+    // Route the call through the Flint proxy (Scramjet) when running inside the
+    // proxy frame, so it works even when the calling site is blocked.
+    function toProxied(url) {
+      try {
+        if (window.parent && window.parent !== window && window.parent.flintProxyEncode) {
+          const p = window.parent.flintProxyEncode(url);
+          if (p) return p;
+        }
+      } catch (e) {}
+      return url;
+    }
 
     function showFallback() {
       $('#loading').style.display = 'none';
@@ -69,44 +80,28 @@
     }
 
     function start() {
-      if (typeof JitsiMeetExternalAPI === 'undefined') { showFallback(); return; }
       const name = localStorage.getItem('ch4t_user') || ('guest-' + Math.floor(1000 + Math.random() * 9000));
-      try {
-        const api = new JitsiMeetExternalAPI('vc.autistici.org', {
-          roomName: ROOM,
-          parentNode: $('#jitsi'),
-          width: '100%',
-          height: '100%',
-          userInfo: { displayName: name },
-          configOverwrite: {
-            prejoinPageEnabled: true,
-            disableDeepLinking: true,
-            startWithAudioMuted: true,
-            startWithVideoMuted: true,
-            enableWelcomePage: false
-          },
-          interfaceConfigOverwrite: {
-            MOBILE_APP_PROMO: false,
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_WATERMARK_FOR_GUESTS: false,
-            DISABLE_DEEP_LINKING: true,
-            TOOLBAR_BUTTONS: ['microphone', 'camera', 'desktop', 'fullscreen', 'tileview', 'raisehand', 'chat', 'participants-pane', 'settings', 'hangup']
-          }
-        });
-        $('#loading').style.display = 'none';
-        $('#jitsi').style.display = 'block';
-        api.addEventListener('videoConferenceLeft', () => location.reload());
-        api.addEventListener('readyToClose', () => location.reload());
-      } catch (e) {
-        showFallback();
-      }
+      const hash = '#config.prejoinConfig.enabled=false'
+                 + '&config.startWithAudioMuted=true'
+                 + '&config.startWithVideoMuted=true'
+                 + '&config.disableDeepLinking=true'
+                 + '&userInfo.displayName=%22' + encodeURIComponent(name) + '%22';
+      const roomUrl = 'https://vc.autistici.org/' + ROOM + hash;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = toProxied(roomUrl);
+      iframe.dataset.testid = 'call-iframe';
+      iframe.allow = 'camera; microphone; display-capture; fullscreen; autoplay; clipboard-write; speaker-selection';
+      iframe.setAttribute('allowfullscreen', 'true');
+      iframe.addEventListener('error', showFallback);
+
+      $('#jitsi').appendChild(iframe);
+      $('#loading').style.display = 'none';
+      $('#jitsi').style.display = 'block';
     }
 
-    // external_api.js loads via the script tag above
     if (document.readyState === 'complete') start();
     else window.addEventListener('load', start);
-    // safety: if the API script never defined the global, show fallback
-    setTimeout(() => { if (typeof JitsiMeetExternalAPI === 'undefined') showFallback(); }, 6000);
 
     document.getElementById('toggleChat').addEventListener('click', () => {
       document.getElementById('chatPane').classList.toggle('hidden');
