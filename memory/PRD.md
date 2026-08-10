@@ -33,6 +33,12 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 - **Improved game loader** (`pages/g.html`): `document.write` path now injects a `<base href>` so games' relative asset paths resolve against their real host (repairs games that previously rendered blank).
 - Verified via screenshots: proxy browse, movies in-app player, 2048, DOOM, Flappy Bird all working.
 
+## Work Done (2026-07, cont.) — Real content + proxy routing
+- **Expanded games to 338**: added **56 more real, famous Internet Archive games** (arcade via internetarcade + MS-DOS via softwarelibrary_msdos_games), all emulator-playable embeds — Mortal Kombat, Metal Slug, Q*bert, Joust, Defender, Out Run, Tron, Marble Madness, Centipede, Gauntlet, Rampage, Space Invaders, Berzerk, Paperboy, Commando, Crystal Castles, Moon Patrol, 1942, Aladdin, Golden Axe, Dune II, Master of Orion, Duke Nukem 3D, Jazz Jackrabbit, Maniac Mansion, Monkey Island, Mortal Kombat (DOS), DOOM II, Tomb Raider, Prince of Persia, Oregon Trail, SimCity, Lode Runner, Battle Chess, Monopoly, Bomberman, etc. All 70 IA-embed game IDs validated (0 invalid).
+- **Expanded movies to 70**: added 23 more recognizable public-domain films (My Man Godfrey, A Star Is Born 1937, The Gold Rush, The Kid, White Zombie, M (Fritz Lang), The 39 Steps-era Hitchcock, Beat the Devil, Kansas City Confidential, The Hitch-Hiker, Robot Monster, Santa Claus Conquers the Martians, Reefer Madness, etc.). All verified to have playable video derivatives.
+- **Internet Archive titles now load THROUGH the Flint proxy** (so they work even when archive.org is blocked on the network). Added `window.flintProxyEncode(url)` in `script.js` (exposes `sharedScramjet.encodeUrl` → `/scramjet/<encoded>` path). `movies.html` and `g.html` (IA embeds only) route their iframe through this when running inside the proxy frame; direct fallback for standalone access. Verified end-to-end: "Night of the Living Dead" (movie) and DOOM (game) both load via `/scramjet/https%3A%2F%2Farchive.org...` through Scramjet+WISP.
+- NOTE: Open-source githack games (2048, Tetris, Flappy Bird, DOOM-clone, etc.) still load directly (not archive.org). No pirate stream/game sources used anywhere.
+
 ## Known / Out of Scope
 - Live proxy browsing needs a reachable **wisp** websocket server. The bundled public wisp servers are unreachable from this container's network (inherent to the third-party tool); on a real deployment users' browsers may reach them.
 - Cosmetic: a third-party telemetry counter is blocked by CORS (non-blocking).

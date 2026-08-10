@@ -186,11 +186,23 @@
     const playerTitle = $('#playerTitle');
     let allMovies = [];
 
+    // Route through the Flint proxy (Scramjet) when running inside the proxy
+    // frame, so it works even when archive.org is blocked on the network.
+    const toProxied = (url) => {
+      try {
+        if (window.parent && window.parent !== window && window.parent.flintProxyEncode) {
+          const p = window.parent.flintProxyEncode(url);
+          if (p) return p;
+        }
+      } catch (e) {}
+      return url;
+    };
+
     const openMovie = (movie) => {
       playerTitle.textContent = movie.name;
       playerFrame.innerHTML = '';
       const iframe = document.createElement('iframe');
-      iframe.src = movie.embed;
+      iframe.src = toProxied(movie.embed);
       iframe.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
       iframe.allowFullscreen = true;
       iframe.setAttribute('webkitallowfullscreen', 'true');

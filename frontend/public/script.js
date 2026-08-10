@@ -162,6 +162,14 @@ async function getSharedScramjet() {
             sync: basePath + "engine/scramjet.sync.js"
         }
     });
+
+    // Expose a proxy-URL encoder so sub-pages (movies/games inside the proxy
+    // frame) can route Internet Archive embeds through Scramjet + the WISP
+    // transport. Returns a "/scramjet/<encoded>" path the SW (scope "/") proxies.
+    window.flintProxyEncode = (u) => {
+        try { return sharedScramjet ? sharedScramjet.encodeUrl(u) : null; }
+        catch (e) { return null; }
+    };
     
     try {
         await sharedScramjet.init();

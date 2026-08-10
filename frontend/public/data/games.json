@@ -1690,5 +1690,341 @@
     "src": "https://archive.org/embed/msdos_Test_Drive_1987",
     "image": "https://archive.org/services/img/msdos_Test_Drive_1987",
     "description": "iframe"
+  },
+  {
+    "name": "Mortal Kombat (Arcade)",
+    "src": "https://archive.org/embed/arcade_mk",
+    "image": "https://archive.org/services/img/arcade_mk",
+    "description": "iframe"
+  },
+  {
+    "name": "Metal Slug",
+    "src": "https://archive.org/embed/arcade_mslug",
+    "image": "https://archive.org/services/img/arcade_mslug",
+    "description": "iframe"
+  },
+  {
+    "name": "1942",
+    "src": "https://archive.org/embed/arcade_1942",
+    "image": "https://archive.org/services/img/arcade_1942",
+    "description": "iframe"
+  },
+  {
+    "name": "Q*bert",
+    "src": "https://archive.org/embed/arcade_qbert",
+    "image": "https://archive.org/services/img/arcade_qbert",
+    "description": "iframe"
+  },
+  {
+    "name": "Joust",
+    "src": "https://archive.org/embed/arcade_joust",
+    "image": "https://archive.org/services/img/arcade_joust",
+    "description": "iframe"
+  },
+  {
+    "name": "Defender",
+    "src": "https://archive.org/embed/arcade_defender",
+    "image": "https://archive.org/services/img/arcade_defender",
+    "description": "iframe"
+  },
+  {
+    "name": "Out Run",
+    "src": "https://archive.org/embed/arcade_outrun",
+    "image": "https://archive.org/services/img/arcade_outrun",
+    "description": "iframe"
+  },
+  {
+    "name": "Tron",
+    "src": "https://archive.org/embed/arcade_tron",
+    "image": "https://archive.org/services/img/arcade_tron",
+    "description": "iframe"
+  },
+  {
+    "name": "Dig Dug",
+    "src": "https://archive.org/embed/arcade_digdug",
+    "image": "https://archive.org/services/img/arcade_digdug",
+    "description": "iframe"
+  },
+  {
+    "name": "Marble Madness",
+    "src": "https://archive.org/embed/arcade_marble",
+    "image": "https://archive.org/services/img/arcade_marble",
+    "description": "iframe"
+  },
+  {
+    "name": "Centipede",
+    "src": "https://archive.org/embed/arcade_centiped",
+    "image": "https://archive.org/services/img/arcade_centiped",
+    "description": "iframe"
+  },
+  {
+    "name": "Moon Patrol",
+    "src": "https://archive.org/embed/arcade_mpatrol",
+    "image": "https://archive.org/services/img/arcade_mpatrol",
+    "description": "iframe"
+  },
+  {
+    "name": "Pengo",
+    "src": "https://archive.org/embed/arcade_pengo",
+    "image": "https://archive.org/services/img/arcade_pengo",
+    "description": "iframe"
+  },
+  {
+    "name": "Rampage",
+    "src": "https://archive.org/embed/arcade_rampage",
+    "image": "https://archive.org/services/img/arcade_rampage",
+    "description": "iframe"
+  },
+  {
+    "name": "Gauntlet",
+    "src": "https://archive.org/embed/arcade_gauntlet",
+    "image": "https://archive.org/services/img/arcade_gauntlet",
+    "description": "iframe"
+  },
+  {
+    "name": "Space Invaders (Arcade)",
+    "src": "https://archive.org/embed/arcade_invaders",
+    "image": "https://archive.org/services/img/arcade_invaders",
+    "description": "iframe"
+  },
+  {
+    "name": "Berzerk",
+    "src": "https://archive.org/embed/arcade_berzerk",
+    "image": "https://archive.org/services/img/arcade_berzerk",
+    "description": "iframe"
+  },
+  {
+    "name": "Mr. Do!",
+    "src": "https://archive.org/embed/arcade_mrdo",
+    "image": "https://archive.org/services/img/arcade_mrdo",
+    "description": "iframe"
+  },
+  {
+    "name": "Indiana Jones: Temple of Doom",
+    "src": "https://archive.org/embed/arcade_indytemp",
+    "image": "https://archive.org/services/img/arcade_indytemp",
+    "description": "iframe"
+  },
+  {
+    "name": "Paperboy",
+    "src": "https://archive.org/embed/arcade_paperboy",
+    "image": "https://archive.org/services/img/arcade_paperboy",
+    "description": "iframe"
+  },
+  {
+    "name": "Commando",
+    "src": "https://archive.org/embed/arcade_commsega",
+    "image": "https://archive.org/services/img/arcade_commsega",
+    "description": "iframe"
+  },
+  {
+    "name": "Discs of Tron",
+    "src": "https://archive.org/embed/arcade_dotron",
+    "image": "https://archive.org/services/img/arcade_dotron",
+    "description": "iframe"
+  },
+  {
+    "name": "Root Beer Tapper",
+    "src": "https://archive.org/embed/arcade_rbtapper",
+    "image": "https://archive.org/services/img/arcade_rbtapper",
+    "description": "iframe"
+  },
+  {
+    "name": "Crystal Castles",
+    "src": "https://archive.org/embed/arcade_ccastles",
+    "image": "https://archive.org/services/img/arcade_ccastles",
+    "description": "iframe"
+  },
+  {
+    "name": "Congo Bongo",
+    "src": "https://archive.org/embed/arcade_congo",
+    "image": "https://archive.org/services/img/arcade_congo",
+    "description": "iframe"
+  },
+  {
+    "name": "Carnival",
+    "src": "https://archive.org/embed/arcade_carnival",
+    "image": "https://archive.org/services/img/arcade_carnival",
+    "description": "iframe"
+  },
+  {
+    "name": "Phoenix",
+    "src": "https://archive.org/embed/arcade_phoenix",
+    "image": "https://archive.org/services/img/arcade_phoenix",
+    "description": "iframe"
+  },
+  {
+    "name": "Hang-On",
+    "src": "https://archive.org/embed/arcade_hangon",
+    "image": "https://archive.org/services/img/arcade_hangon",
+    "description": "iframe"
+  },
+  {
+    "name": "Oregon Trail Deluxe",
+    "src": "https://archive.org/embed/msdos_Oregon_Trail_Deluxe_The_1992",
+    "image": "https://archive.org/services/img/msdos_Oregon_Trail_Deluxe_The_1992",
+    "description": "iframe"
+  },
+  {
+    "name": "DOOM II",
+    "src": "https://archive.org/embed/Doom-2",
+    "image": "https://archive.org/services/img/Doom-2",
+    "description": "iframe"
+  },
+  {
+    "name": "Disney's Aladdin",
+    "src": "https://archive.org/embed/msdos_Disneys_Aladdin_1994",
+    "image": "https://archive.org/services/img/msdos_Disneys_Aladdin_1994",
+    "description": "iframe"
+  },
+  {
+    "name": "Ms. Pac-Man (DOS)",
+    "src": "https://archive.org/embed/msdos_Ms._Pac-Man_1983",
+    "image": "https://archive.org/services/img/msdos_Ms._Pac-Man_1983",
+    "description": "iframe"
+  },
+  {
+    "name": "Donkey Kong (DOS)",
+    "src": "https://archive.org/embed/msdos_Donkey_Kong_1983",
+    "image": "https://archive.org/services/img/msdos_Donkey_Kong_1983",
+    "description": "iframe"
+  },
+  {
+    "name": "Golden Axe",
+    "src": "https://archive.org/embed/msdos_Golden_Axe_1990",
+    "image": "https://archive.org/services/img/msdos_Golden_Axe_1990",
+    "description": "iframe"
+  },
+  {
+    "name": "Dune II",
+    "src": "https://archive.org/embed/msdos_Dune_2_-_The_Building_of_a_Dynasty_1992",
+    "image": "https://archive.org/services/img/msdos_Dune_2_-_The_Building_of_a_Dynasty_1992",
+    "description": "iframe"
+  },
+  {
+    "name": "Scorched Earth",
+    "src": "https://archive.org/embed/msdos_Scorched_Earth_1991",
+    "image": "https://archive.org/services/img/msdos_Scorched_Earth_1991",
+    "description": "iframe"
+  },
+  {
+    "name": "Bust-A-Move",
+    "src": "https://archive.org/embed/msdos_Bust-A-Move_1997",
+    "image": "https://archive.org/services/img/msdos_Bust-A-Move_1997",
+    "description": "iframe"
+  },
+  {
+    "name": "Batman Returns",
+    "src": "https://archive.org/embed/msdos_Batman_Returns_1993",
+    "image": "https://archive.org/services/img/msdos_Batman_Returns_1993",
+    "description": "iframe"
+  },
+  {
+    "name": "Indiana Jones: Last Crusade",
+    "src": "https://archive.org/embed/msdos_Indiana_Jones_and_The_Last_Crusade_1989",
+    "image": "https://archive.org/services/img/msdos_Indiana_Jones_and_The_Last_Crusade_1989",
+    "description": "iframe"
+  },
+  {
+    "name": "Master of Orion",
+    "src": "https://archive.org/embed/msdos_Master_of_Orion_1993",
+    "image": "https://archive.org/services/img/msdos_Master_of_Orion_1993",
+    "description": "iframe"
+  },
+  {
+    "name": "Duke Nukem 3D",
+    "src": "https://archive.org/embed/DUKE3D_DOS",
+    "image": "https://archive.org/services/img/DUKE3D_DOS",
+    "description": "iframe"
+  },
+  {
+    "name": "Jazz Jackrabbit",
+    "src": "https://archive.org/embed/msdos_Jazz_Jackrabbit_1994",
+    "image": "https://archive.org/services/img/msdos_Jazz_Jackrabbit_1994",
+    "description": "iframe"
+  },
+  {
+    "name": "Maniac Mansion",
+    "src": "https://archive.org/embed/msdos_Maniac_Mansion_1987",
+    "image": "https://archive.org/services/img/msdos_Maniac_Mansion_1987",
+    "description": "iframe"
+  },
+  {
+    "name": "The Secret of Monkey Island",
+    "src": "https://archive.org/embed/msdos_Secret_of_Monkey_Island_The_1990",
+    "image": "https://archive.org/services/img/msdos_Secret_of_Monkey_Island_The_1990",
+    "description": "iframe"
+  },
+  {
+    "name": "Mortal Kombat (DOS)",
+    "src": "https://archive.org/embed/msdos_Mortal_Kombat_1993",
+    "image": "https://archive.org/services/img/msdos_Mortal_Kombat_1993",
+    "description": "iframe"
+  },
+  {
+    "name": "Lode Runner",
+    "src": "https://archive.org/embed/msdos_Lode_Runner_1983_1983",
+    "image": "https://archive.org/services/img/msdos_Lode_Runner_1983_1983",
+    "description": "iframe"
+  },
+  {
+    "name": "The Incredible Machine",
+    "src": "https://archive.org/embed/the_incredible_machine_1992",
+    "image": "https://archive.org/services/img/the_incredible_machine_1992",
+    "description": "iframe"
+  },
+  {
+    "name": "Tomb Raider",
+    "src": "https://archive.org/embed/tomb_raider_1996",
+    "image": "https://archive.org/services/img/tomb_raider_1996",
+    "description": "iframe"
+  },
+  {
+    "name": "Prehistorik 2",
+    "src": "https://archive.org/embed/msdos_Prehistorik_2_1993",
+    "image": "https://archive.org/services/img/msdos_Prehistorik_2_1993",
+    "description": "iframe"
+  },
+  {
+    "name": "Battle Chess",
+    "src": "https://archive.org/embed/battle_chess_1988",
+    "image": "https://archive.org/services/img/battle_chess_1988",
+    "description": "iframe"
+  },
+  {
+    "name": "Monopoly Deluxe",
+    "src": "https://archive.org/embed/msdos_Monopoly_Deluxe_1992",
+    "image": "https://archive.org/services/img/msdos_Monopoly_Deluxe_1992",
+    "description": "iframe"
+  },
+  {
+    "name": "Carmen Sandiego",
+    "src": "https://archive.org/embed/msdos_Where_in_the_World_is_Carmen_Sandiego_Enhanced_1989",
+    "image": "https://archive.org/services/img/msdos_Where_in_the_World_is_Carmen_Sandiego_Enhanced_1989",
+    "description": "iframe"
+  },
+  {
+    "name": "Stunts",
+    "src": "https://archive.org/embed/msdos_Stunts_1990",
+    "image": "https://archive.org/services/img/msdos_Stunts_1990",
+    "description": "iframe"
+  },
+  {
+    "name": "SimCity Classic",
+    "src": "https://archive.org/embed/msdos_SimCity_Classic_1994",
+    "image": "https://archive.org/services/img/msdos_SimCity_Classic_1994",
+    "description": "iframe"
+  },
+  {
+    "name": "Bomberman (Dyna Blaster)",
+    "src": "https://archive.org/embed/chenall_dyna",
+    "image": "https://archive.org/services/img/chenall_dyna",
+    "description": "iframe"
+  },
+  {
+    "name": "Super Mario World DX",
+    "src": "https://archive.org/embed/msdos_Super_Mario_World_DX_2002",
+    "image": "https://archive.org/services/img/msdos_Super_Mario_World_DX_2002",
+    "description": "iframe"
   }
 ]

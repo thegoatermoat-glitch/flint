@@ -363,7 +363,18 @@ function appendGame(game) {
     const iframe = createFreshIframe();
 
     if (game.description === "iframe") {
-      iframe.src = game.src;
+      // Internet Archive games route through the Flint proxy (works even if
+      // archive.org is blocked); other embeds load directly.
+      let src = game.src;
+      if (src.includes('archive.org')) {
+        try {
+          if (window.parent && window.parent !== window && window.parent.flintProxyEncode) {
+            const p = window.parent.flintProxyEncode(src);
+            if (p) src = p;
+          }
+        } catch (e) {}
+      }
+      iframe.src = src;
       iframe.onload = () => $('#loader').classList.remove('show');
     } else {
       fetch(game.src)
