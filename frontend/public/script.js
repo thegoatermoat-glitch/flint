@@ -223,11 +223,12 @@ async function initializeBrowser() {
                 <button id="reload-btn" title="Reload"><i class="fa-solid fa-rotate-right"></i></button>
                 <div class="address-wrapper">
                     <input class="bar" id="address-bar" autocomplete="off" placeholder="Search or enter URL">
+                    <button id="bookmark-btn" title="Bookmark this page"><i class="fa-regular fa-star"></i></button>
                     <button id="home-btn-nav" title="Home"><i class="fa-solid fa-house"></i></button>
                 </div>
                 <button id="devtools-btn" title="DevTools"><i class="fa-solid fa-code"></i></button>
                 <button id="fullscreen-btn" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
-                <button id="wisp-settings-btn" title="Proxy Settings"><i class="fa-solid fa-gear"></i></button>
+                <button id="wisp-settings-btn" title="Settings"><i class="fa-solid fa-gear"></i></button>
             </div>
             <div class="loading-bar-container"><div class="loading-bar" id="loading-bar"></div></div>
             <div class="iframe-container" id="iframe-container">
@@ -263,6 +264,7 @@ async function initializeBrowser() {
     document.getElementById('devtools-btn').onclick = toggleDevTools;
     document.getElementById('fullscreen-btn').onclick = toggleFullscreen;
     document.getElementById('wisp-settings-btn').onclick = openSettings;
+    document.getElementById('bookmark-btn').onclick = bookmarkCurrent;
 
     elements.skipBtn.onclick = () => {
         const tab = getActiveTab();
@@ -309,6 +311,7 @@ function createTab(makeActive = true) {
 
         if (tab.id === activeTabId) {
             showIframeLoading(true, tab.url);
+            updateBookmarkIcon();
         }
 
         try {
@@ -526,6 +529,63 @@ function openSettings() {
     modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
     
     renderServerList();
+    renderCloaks();
+    renderBookmarksList();
+}
+
+function renderCloaks() {
+    const list = document.getElementById('cloak-list');
+    if (!list) return;
+    const current = localStorage.getItem('flint_cloak') || 'none';
+    list.innerHTML = '';
+    Object.entries(CLOAKS).forEach(([key, c]) => {
+        const opt = document.createElement('div');
+        opt.className = `cloak-opt ${key === current ? 'active' : ''}`;
+        opt.dataset.testid = `cloak-${key}`;
+        const media = c.icon
+            ? `<img src="${c.icon}" alt="">`
+            : `<div class="co-none"><i class="fa-solid fa-fire"></i></div>`;
+        opt.innerHTML = `${media}<span>${c.label}</span>`;
+        opt.onclick = () => {
+            setCloak(key);
+            list.querySelectorAll('.cloak-opt').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+        };
+        list.appendChild(opt);
+    });
+}
+
+function renderBookmarksList() {
+    const list = document.getElementById('bookmark-list');
+    if (!list) return;
+    const bms = getBookmarks();
+    list.innerHTML = '';
+    if (!bms.length) {
+        list.innerHTML = '<div class="bm-empty">No bookmarks yet. Tap the ☆ in the address bar while browsing to save a page.</div>';
+        return;
+    }
+    bms.forEach(bm => {
+        const item = document.createElement('div');
+        item.className = 'bm-item';
+        item.dataset.testid = 'bookmark-item';
+        item.innerHTML = `
+            <div style="min-width:0;">
+                <div class="bm-title">${bm.title}</div>
+                <div class="bm-url">${bm.url}</div>
+            </div>
+            <button class="bm-del" title="Remove" data-testid="bookmark-delete"><i class="fa-solid fa-trash"></i></button>`;
+        item.querySelector('.bm-del').onclick = (e) => {
+            e.stopPropagation();
+            saveBookmarks(getBookmarks().filter(b => b.url !== bm.url));
+            renderBookmarksList();
+            updateBookmarkIcon();
+        };
+        item.onclick = () => {
+            document.getElementById('wisp-settings-modal').classList.add('hidden');
+            handleSubmit(bm.url);
+        };
+        list.appendChild(item);
+    });
 }
 
 function renderServerList() {
@@ -703,9 +763,8 @@ function toggleDevTools() {
 }
 
 function toggleFullscreen() {
-    // Fullscreen the whole browsing surface (content + nav) so proxied pages
-    // fill the screen. Esc / the button again exits.
-    const el = document.querySelector('.browser-container') || document.getElementById('iframe-container');
+    // Fullscreen only the active proxy tab's content (not the whole site UI).
+    const el = getActiveTab()?.frame?.frame || document.getElementById('iframe-container');
     if (!document.fullscreenElement) {
         (el?.requestFullscreen || el?.webkitRequestFullscreen)?.call(el);
     } else {
@@ -717,6 +776,63 @@ document.addEventListener('fullscreenchange', () => {
     const icon = document.querySelector('#fullscreen-btn i');
     if (icon) icon.className = document.fullscreenElement ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
 });
+
+/* ---------------- Bookmarks ---------------- */
+function getBookmarks() {
+    try { return JSON.parse(localStorage.getItem('flint_bookmarks') || '[]'); } catch (e) { return []; }
+}
+function saveBookmarks(list) { localStorage.setItem('flint_bookmarks', JSON.stringify(list)); }
+
+function bookmarkCurrent() {
+    const tab = getActiveTab();
+    const url = tab?.url;
+    if (!url || url.includes('/pages/nt.html')) return;
+    const list = getBookmarks();
+    const existingIdx = list.findIndex(b => b.url === url);
+    if (existingIdx >= 0) {
+        list.splice(existingIdx, 1); // toggle off
+    } else {
+        let title = tab.title || url;
+        try { title = new URL(url).hostname.replace('www.', ''); } catch (e) {}
+        list.unshift({ url, title });
+    }
+    saveBookmarks(list);
+    updateBookmarkIcon();
+}
+
+function updateBookmarkIcon() {
+    const icon = document.querySelector('#bookmark-btn i');
+    if (!icon) return;
+    const url = getActiveTab()?.url;
+    const saved = url && getBookmarks().some(b => b.url === url);
+    icon.className = saved ? 'fa-solid fa-star' : 'fa-regular fa-star';
+}
+
+/* ---------------- Cloak (preset only) ---------------- */
+const CLOAKS = {
+    none:      { label: 'None (Flint)', title: 'Flint', icon: '' },
+    classroom: { label: 'Google Classroom', title: 'Home', icon: 'https://www.google.com/s2/favicons?sz=64&domain=classroom.google.com' },
+    docs:      { label: 'Google Docs', title: 'Google Docs', icon: 'https://www.google.com/s2/favicons?sz=64&domain=docs.google.com' },
+    drive:     { label: 'Google Drive', title: 'Home - Google Drive', icon: 'https://www.google.com/s2/favicons?sz=64&domain=drive.google.com' },
+    slides:    { label: 'Google Slides', title: 'Google Slides', icon: 'https://www.google.com/s2/favicons?sz=64&domain=slides.google.com' },
+    gmail:     { label: 'Gmail', title: 'Inbox', icon: 'https://www.google.com/s2/favicons?sz=64&domain=mail.google.com' },
+    clever:    { label: 'Clever', title: 'Clever | Portal', icon: 'https://www.google.com/s2/favicons?sz=64&domain=clever.com' },
+    canvas:    { label: 'Canvas', title: 'Dashboard', icon: 'https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com' },
+    wikipedia: { label: 'Wikipedia', title: 'Wikipedia', icon: 'https://www.google.com/s2/favicons?sz=64&domain=wikipedia.org' },
+    khan:      { label: 'Khan Academy', title: 'Dashboard | Khan Academy', icon: 'https://www.google.com/s2/favicons?sz=64&domain=khanacademy.org' }
+};
+
+function applyCloak(key) {
+    const c = CLOAKS[key] || CLOAKS.none;
+    document.title = c.title;
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+    if (c.icon) link.href = c.icon;
+    else link.href = 'images/favicon.ico';
+}
+
+function setCloak(key) { localStorage.setItem('flint_cloak', key); applyCloak(key); }
+(function initCloak() { applyCloak(localStorage.getItem('flint_cloak') || 'none'); })();
 
 async function checkHashParameters() {
     if (window.location.hash) {

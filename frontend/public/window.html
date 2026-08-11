@@ -16,6 +16,24 @@
     </script>
 
     <link rel="stylesheet" href="style.css">
+    <style>
+        .cloak-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .cloak-opt { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease; }
+        .cloak-opt:hover { background: rgba(255,255,255,0.07); }
+        .cloak-opt.active { border-color: var(--accent, #e2c044); background: rgba(226,192,68,0.12); }
+        .cloak-opt img { width: 22px; height: 22px; border-radius: 4px; background: #fff; }
+        .cloak-opt .co-none { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: #888; }
+        .cloak-opt span { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bm-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); margin-bottom: 8px; cursor: pointer; }
+        .bm-item:hover { background: rgba(255,255,255,0.07); }
+        .bm-item .bm-title { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bm-item .bm-url { font-size: 0.72rem; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bm-del { background: none; border: none; color: #e06c6c; cursor: pointer; flex-shrink: 0; padding: 6px; }
+        .bm-empty { color: #888; font-size: 0.9rem; padding: 8px 2px; }
+    </style>
     <script src="./script.js" defer></script>
 </head>
 
@@ -43,12 +61,18 @@
                     <div class="sidebar-item" data-pane="pane-prefs">
                         <i class="fa-solid fa-gear"></i> Preferences
                     </div>
+                    <div class="sidebar-item" data-pane="pane-cloak">
+                        <i class="fa-solid fa-mask"></i> Cloak
+                    </div>
+                    <div class="sidebar-item" data-pane="pane-bookmarks">
+                        <i class="fa-solid fa-star"></i> Bookmarks
+                    </div>
                 </nav>
 
                 <div class="settings-content">
                     
                     <div class="settings-pane" id="pane-network">
-                        <div class="section-title">Proxy Servers</div>
+                        <div class="section-title">C0nn3ction Servers</div>
                         <div class="server-list" id="server-list"></div>
                         
                         <div class="section-title">Add Custom Server</div>
@@ -87,6 +111,17 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="settings-pane hidden" id="pane-cloak">
+                        <div class="section-title">Tab Cloak</div>
+                        <div class="settings-label" style="margin-bottom:14px;"><small>Disguise this tab's name &amp; icon. Applies instantly and is remembered.</small></div>
+                        <div class="cloak-grid" id="cloak-list"></div>
+                    </div>
+
+                    <div class="settings-pane hidden" id="pane-bookmarks">
+                        <div class="section-title">Saved Bookmarks</div>
+                        <div class="server-list" id="bookmark-list"></div>
                     </div>
 
                 </div> </div> <div class="settings-footer">

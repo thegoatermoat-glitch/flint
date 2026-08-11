@@ -175,12 +175,12 @@
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">M0v13s</h1>
-      <div class="subtitle">Popular movies — tap a poster to watch free on Tubi, through the proxy</div>
+      <div class="subtitle">Popular movies — tap a poster to watch free on Tubi, through the pr0xy</div>
     </div>
 
     <div class="tubi-hero" data-testid="tubi-hero">
       <h2><i class="fa-solid fa-clapperboard" style="color:#fa382d"></i> Watch free movies on Tubi</h2>
-      <p>Thousands of real, popular movies &amp; shows — free with ads, loaded through the Flint proxy so it works even when Tubi is blocked.</p>
+      <p>Thousands of real, popular movies &amp; shows — free with ads, loaded through the Flint pr0xy so it works even when Tubi is bl0ck3d.</p>
       <div class="tubi-actions">
         <button class="tubi-btn" data-testid="tubi-open" data-url="https://tubitv.com/home"><i class="fa-solid fa-play"></i> Open Tubi</button>
         <button class="tubi-btn secondary" data-testid="tubi-movies" data-url="https://tubitv.com/movies"><i class="fa-solid fa-film"></i> Movies</button>
@@ -188,12 +188,15 @@
       </div>
     </div>
 
-    <div class="section-label" data-testid="popular-label">Popular on Tubi <span>· tap any poster to start watching</span></div>
+    <div class="section-label" data-testid="popular-label" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <span id="popular-label-text">Discover free movies</span>
+      <button id="shuffleBtn" data-testid="shuffle-btn" class="tubi-btn secondary" style="padding:8px 16px;font-size:0.85rem;"><i class="fa-solid fa-shuffle"></i> Shuffle</button>
+    </div>
 
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="Search m0v13s..." autocomplete="off">
+        <input type="text" id="searchInput" placeholder="Search thousands of movies..." autocomplete="off">
       </form>
     </div>
 
@@ -265,7 +268,7 @@
       overlay.classList.add('show');
     };
 
-    document.querySelectorAll('.tubi-btn').forEach(b =>
+    document.querySelectorAll('.tubi-btn[data-url]').forEach(b =>
       b.addEventListener('click', () => openUrl(b.dataset.url, 'Tubi'))
     );
 
@@ -296,14 +299,45 @@
       emptyState.style.display = list.length ? 'none' : 'block';
     }
 
+    const GRID_SIZE = 60;
+    const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+    const showRotating = () => {
+      $('#popular-label-text').textContent = 'Discover free movies';
+      render(shuffle(allMovies).slice(0, GRID_SIZE));
+    };
+
+    // Full catalog (thousands of titles) is lazy-loaded on first search.
+    let fullCatalog = null, loadingCatalog = false;
+    const ensureCatalog = async () => {
+      if (fullCatalog || loadingCatalog) return;
+      loadingCatalog = true;
+      try {
+        const r = await fetch('../data/tubi_catalog.json');
+        fullCatalog = await r.json();
+      } catch (e) { fullCatalog = allMovies; }
+      loadingCatalog = false;
+    };
+
     fetch('../data/movies.json')
       .then(r => r.json())
-      .then(data => { allMovies = data; render(allMovies); })
+      .then(data => { allMovies = data; showRotating(); })
       .catch(() => { emptyState.textContent = 'Failed to load m0v13s :('; emptyState.style.display = 'block'; });
 
+    $('#shuffleBtn').addEventListener('click', showRotating);
+
+    let searchTimer;
     searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
       const q = searchInput.value.toLowerCase().trim();
-      render(q ? allMovies.filter(m => m.name.toLowerCase().includes(q)) : allMovies);
+      if (!q) { showRotating(); return; }
+      searchTimer = setTimeout(async () => {
+        await ensureCatalog();
+        const src = fullCatalog || allMovies;
+        const results = src.filter(m => m.name.toLowerCase().includes(q)).slice(0, 120);
+        $('#popular-label-text').textContent = `${results.length}${results.length === 120 ? '+' : ''} result${results.length === 1 ? '' : 's'} for "${searchInput.value.trim()}"`;
+        render(results);
+      }, 220);
     });
   </script>
 
