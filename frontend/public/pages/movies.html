@@ -175,7 +175,7 @@
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">M0v13s</h1>
-      <div class="subtitle">Free movies on Tubi + classic &amp; cult films — all through the proxy</div>
+      <div class="subtitle">Popular movies — tap a poster to watch free on Tubi, through the proxy</div>
     </div>
 
     <div class="tubi-hero" data-testid="tubi-hero">
@@ -188,7 +188,7 @@
       </div>
     </div>
 
-    <div class="section-label" data-testid="classics-label">Classic &amp; cult films <span>· streamed free via Internet Archive</span></div>
+    <div class="section-label" data-testid="popular-label">Popular on Tubi <span>· tap any poster to start watching</span></div>
 
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
@@ -238,7 +238,7 @@
       playerTitle.textContent = movie.name;
       playerFrame.innerHTML = '';
       const iframe = document.createElement('iframe');
-      iframe.src = toProxied(movie.embed);
+      iframe.src = toProxied(movie.url);
       iframe.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
       iframe.allowFullscreen = true;
       iframe.setAttribute('webkitallowfullscreen', 'true');
