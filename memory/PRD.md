@@ -44,6 +44,8 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 - **Proxy browser fullscreen button** (2026-07): added an expand/compress button to the `window.html` nav (`script.js` → `toggleFullscreen`) that fullscreens `.browser-container`; icon toggles on `fullscreenchange`.
 - **Tubi movies via proxy** (2026-07): `movies.html` now has a Tubi hero (Open Tubi / Movies / TV Shows) that loads tubitv.com **through the Flint proxy** via `flintProxyEncode` in the player overlay — real popular catalog, works even when Tubi is blocked. Internet Archive classics grid kept below. Verified: Tubi homepage renders through `/scramjet/…tubitv.com/home`. (Video playback of DRM-protected Tubi titles through a proxy is not guaranteed; browsing + many AVOD titles work.)
 
+- **Fixed "scramjet.client.fetch is not a function"** (2026-07): in bare-mux 2.1.9 `BareMuxConnection` has no `.fetch()` (only `BareClient` does). `sw.js` was setting `scramjet.client = connection` (a `BareMuxConnection`) then calling `.fetch()`. Fix: `sw.js` now keeps the `BareMuxConnection` for transport (`scramjet.connection`) and creates `scramjet.client = new BareMux.BareClient(basePath + "bareworker.js")` for the fetch; also pinned the SW's bare-mux import to `@2.1.9` (was unpinned/latest) and null both client+connection on WISP switch. Verified: example.com loads through the proxy with zero fetch errors.
+
 ## Known / Out of Scope
 - Live proxy browsing needs a reachable **wisp** websocket server. The bundled public wisp servers are unreachable from this container's network (inherent to the third-party tool); on a real deployment users' browsers may reach them.
 - Cosmetic: a third-party telemetry counter is blocked by CORS (non-blocking).

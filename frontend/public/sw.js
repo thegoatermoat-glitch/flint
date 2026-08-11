@@ -79,7 +79,7 @@ self.$scramjet = {
 };
 
 importScripts(basePath + "engine/scramjet.all.js");
-importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js");
+importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/index.js");
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker({
@@ -170,8 +170,9 @@ function switchToServer(url, latency = null) {
     });
 
     // Reset connection to force reconnection with new server
-    if (scramjet && scramjet.client) {
+    if (scramjet) {
         scramjet.client = null;
+        scramjet.connection = null;
     }
 }
 
@@ -265,7 +266,11 @@ scramjet.addEventListener("request", async (e) => {
         if (!scramjet.client) {
             const connection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
             await connection.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs", [{ wisp: wispConfig.wispurl }]);
-            scramjet.client = connection;
+            // bare-mux v2: BareMuxConnection only manages the transport (it has no
+            // .fetch()). BareClient — bound to the same SharedWorker/worker path —
+            // performs the actual fetch using that transport.
+            scramjet.connection = connection;
+            scramjet.client = new BareMux.BareClient(basePath + "bareworker.js");
         }
 
         const MAX_RETRIES = 2;
