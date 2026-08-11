@@ -226,6 +226,7 @@ async function initializeBrowser() {
                     <button id="home-btn-nav" title="Home"><i class="fa-solid fa-house"></i></button>
                 </div>
                 <button id="devtools-btn" title="DevTools"><i class="fa-solid fa-code"></i></button>
+                <button id="fullscreen-btn" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
                 <button id="wisp-settings-btn" title="Proxy Settings"><i class="fa-solid fa-gear"></i></button>
             </div>
             <div class="loading-bar-container"><div class="loading-bar" id="loading-bar"></div></div>
@@ -260,6 +261,7 @@ async function initializeBrowser() {
     elements.reloadBtn.onclick = () => getActiveTab()?.frame.reload();
     document.getElementById('home-btn-nav').onclick = () => window.location.href = '../index.html';
     document.getElementById('devtools-btn').onclick = toggleDevTools;
+    document.getElementById('fullscreen-btn').onclick = toggleFullscreen;
     document.getElementById('wisp-settings-btn').onclick = openSettings;
 
     elements.skipBtn.onclick = () => {
@@ -699,6 +701,22 @@ function toggleDevTools() {
     script.onload = () => { win.eruda.init(); win.eruda.show(); };
     win.document.body.appendChild(script);
 }
+
+function toggleFullscreen() {
+    // Fullscreen the whole browsing surface (content + nav) so proxied pages
+    // fill the screen. Esc / the button again exits.
+    const el = document.querySelector('.browser-container') || document.getElementById('iframe-container');
+    if (!document.fullscreenElement) {
+        (el?.requestFullscreen || el?.webkitRequestFullscreen)?.call(el);
+    } else {
+        (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+}
+
+document.addEventListener('fullscreenchange', () => {
+    const icon = document.querySelector('#fullscreen-btn i');
+    if (icon) icon.className = document.fullscreenElement ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+});
 
 async function checkHashParameters() {
     if (window.location.hash) {

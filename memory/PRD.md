@@ -41,6 +41,9 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 - **C4ll routes through the proxy** (2026-07): replaced the Jitsi External-API SDK (which loaded `external_api.js` from the blocked vc.autistici.org) with a **direct room iframe routed via `flintProxyEncode`** (`pages/calling.html`). Skips prejoin, auto-joins muted, chat sidebar intact. Verified: call iframe src = `/scramjet/…vc.autistici.org/FlintGlobalLoungeX7q2…`, Jitsi UI loads through Scramjet+WISP.
 - **Declined (piracy)**: user asked for current blockbusters (e.g. Spider-Man). No legal embeddable source exists for first-run films; would require pirate stream aggregators (vidsrc/2embed) — not implemented. Movies remain the legit Internet Archive catalog. Legit path offered: browse a free ad-supported service (Tubi/Pluto) through the proxy.
 
+- **Proxy browser fullscreen button** (2026-07): added an expand/compress button to the `window.html` nav (`script.js` → `toggleFullscreen`) that fullscreens `.browser-container`; icon toggles on `fullscreenchange`.
+- **Tubi movies via proxy** (2026-07): `movies.html` now has a Tubi hero (Open Tubi / Movies / TV Shows) that loads tubitv.com **through the Flint proxy** via `flintProxyEncode` in the player overlay — real popular catalog, works even when Tubi is blocked. Internet Archive classics grid kept below. Verified: Tubi homepage renders through `/scramjet/…tubitv.com/home`. (Video playback of DRM-protected Tubi titles through a proxy is not guaranteed; browsing + many AVOD titles work.)
+
 ## Known / Out of Scope
 - Live proxy browsing needs a reachable **wisp** websocket server. The bundled public wisp servers are unreachable from this container's network (inherent to the third-party tool); on a real deployment users' browsers may reach them.
 - Cosmetic: a third-party telemetry counter is blocked by CORS (non-blocking).

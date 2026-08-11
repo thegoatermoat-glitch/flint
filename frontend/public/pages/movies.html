@@ -141,6 +141,30 @@
       background: #000; box-shadow: var(--shadow-soft);
     }
     .player-frame iframe { width: 100%; height: 100%; border: 0; }
+
+    /* Tubi hero */
+    .tubi-hero {
+      width: 100%; max-width: 900px; margin: 0 auto 2.5rem; padding: 28px 26px;
+      border-radius: 20px; text-align: left;
+      background: linear-gradient(135deg, rgba(250,56,45,0.18), rgba(30,30,36,0.65));
+      border: 1px solid var(--border-light); box-shadow: var(--shadow-soft);
+    }
+    .tubi-hero h2 { font-size: 1.4rem; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .tubi-hero p { color: var(--text-soft); font-size: 0.95rem; margin-bottom: 18px; max-width: 620px; }
+    .tubi-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .tubi-btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px;
+      border: none; font-weight: 700; cursor: pointer; font-size: 0.95rem;
+      background: #fa382d; color: #fff; transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .tubi-btn:hover { transform: translateY(-2px); background: #ff4a3f; }
+    .tubi-btn.secondary { background: rgba(255,255,255,0.08); color: var(--text); }
+    .tubi-btn.secondary:hover { background: rgba(255,255,255,0.16); }
+    .section-label {
+      width: 100%; max-width: 1100px; margin: 0 auto 16px; text-align: left;
+      font-size: 1.05rem; font-weight: 600; color: var(--text);
+    }
+    .section-label span { color: var(--text-soft); font-weight: 400; font-size: 0.9rem; }
   </style>
 </head>
 
@@ -151,8 +175,20 @@
   <div class="main-container">
     <div class="title-section">
       <h1 class="title">M0v13s</h1>
-      <div class="subtitle">Classic &amp; cult films — streamed free, right here</div>
+      <div class="subtitle">Free movies on Tubi + classic &amp; cult films — all through the proxy</div>
     </div>
+
+    <div class="tubi-hero" data-testid="tubi-hero">
+      <h2><i class="fa-solid fa-clapperboard" style="color:#fa382d"></i> Watch free movies on Tubi</h2>
+      <p>Thousands of real, popular movies &amp; shows — free with ads, loaded through the Flint proxy so it works even when Tubi is blocked.</p>
+      <div class="tubi-actions">
+        <button class="tubi-btn" data-testid="tubi-open" data-url="https://tubitv.com/home"><i class="fa-solid fa-play"></i> Open Tubi</button>
+        <button class="tubi-btn secondary" data-testid="tubi-movies" data-url="https://tubitv.com/movies"><i class="fa-solid fa-film"></i> Movies</button>
+        <button class="tubi-btn secondary" data-testid="tubi-tv" data-url="https://tubitv.com/tv-shows"><i class="fa-solid fa-tv"></i> TV Shows</button>
+      </div>
+    </div>
+
+    <div class="section-label" data-testid="classics-label">Classic &amp; cult films <span>· streamed free via Internet Archive</span></div>
 
     <div class="search-card">
       <form class="search-box" id="searchForm" autocomplete="off" onsubmit="event.preventDefault();">
@@ -215,6 +251,23 @@
       overlay.classList.remove('show');
       playerFrame.innerHTML = '';
     };
+
+    // Generic proxied opener (used by the Tubi buttons)
+    const openUrl = (url, title) => {
+      playerTitle.textContent = title;
+      playerFrame.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = toProxied(url);
+      iframe.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write';
+      iframe.allowFullscreen = true;
+      iframe.dataset.testid = 'movie-player-iframe';
+      playerFrame.appendChild(iframe);
+      overlay.classList.add('show');
+    };
+
+    document.querySelectorAll('.tubi-btn').forEach(b =>
+      b.addEventListener('click', () => openUrl(b.dataset.url, 'Tubi'))
+    );
 
     $('#closeBtn').onclick = closeMovie;
     $('#fullscreenBtn').onclick = () => $('#playerFrame').requestFullscreen?.();
