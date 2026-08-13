@@ -55,6 +55,9 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 - **Bookmarks** (2026-07): star button in the proxy address bar (`#bookmark-btn`) toggles a bookmark for the current tab (localStorage `flint_bookmarks`); Settings → Bookmarks lists them (open via handleSubmit / delete). Icon reflects saved state on urlchange.
 - **Censored flaggable words** (2026-07): user-visible "proxy"/"blocked" leetspeaked to `pr0xy`/`bl0ck3d` across index.html, movies.html, shows.html; settings label "Proxy Servers" → "C0nn3ction Servers". Functional identifiers/URLs (flintProxyEncode, /scramjet/, WISP) untouched.
 
+- **Removable custom shortcuts** (2026-07): custom shortcuts on `nt.html` now render a red × (`.shortcut-remove`, visible on hover) that deletes the shortcut from `localStorage.shortcuts` by index and re-renders. Built-in tiles are unaffected.
+- **VM5 (VMs) tab** (2026-07): new `pages/vms.html` + `VM5` tile on nt.html. Two cards — **AppOnFly** (cloud Windows free trial, `apponfly.com`) and **OnWorks Ubuntu** (`onworks.net/os-distributions/ubuntu-based/free-ubuntu-online-version-20`) — open in a large player overlay routed **through the proxy** via `flintProxyEncode` (Fullscreen/Close). Note: OnWorks requires clicking its "RUN ONLINE" button to boot (no reliable auto-start URL param exists); AppOnFly needs "Start Free Trial". Both are time-limited third-party trials.
+
 ## Known / Out of Scope
 - Live proxy browsing needs a reachable **wisp** websocket server. The bundled public wisp servers are unreachable from this container's network (inherent to the third-party tool); on a real deployment users' browsers may reach them.
 - Cosmetic: a third-party telemetry counter is blocked by CORS (non-blocking).

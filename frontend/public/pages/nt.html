@@ -247,7 +247,30 @@
       cursor: pointer;
       text-decoration: none;
       transition: transform 0.2s ease;
+      position: relative;
     }
+
+    .shortcut-remove {
+      position: absolute;
+      top: -4px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e05c5c;
+      color: #fff;
+      border: 2px solid var(--bg-end, #0d0d12);
+      font-size: 11px;
+      line-height: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      padding: 0;
+    }
+    .custom-shortcut:hover .shortcut-remove { display: flex; }
+    .shortcut-remove:hover { background: #ff6b6b; transform: scale(1.15); }
 
     .shortcut-icon {
       width: 54px;
@@ -452,6 +475,11 @@
         <span class="shortcut-label">4pps</span>
       </a>
 
+      <a class="shortcut" href="vms.html" data-testid="vms-tile">
+        <div class="shortcut-icon"><i class="fa-solid fa-desktop"></i></div>
+        <span class="shortcut-label">VM5</span>
+      </a>
+
       <a class="shortcut" href="flintai.html">
         <div class="shortcut-icon"><i class="fa-solid fa-robot"></i></div>
         <span class="shortcut-label">AI</span>
@@ -534,6 +562,18 @@
     };
 
     $('#shortcuts').onclick = e => {
+      const removeBtn = e.target.closest('.shortcut-remove');
+      if (removeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(removeBtn.dataset.idx, 10);
+        const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+        shortcuts.splice(idx, 1);
+        localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+        renderCustom();
+        return;
+      }
+
       const shortcut = e.target.closest('.shortcut');
       if (!shortcut) return;
 
@@ -560,11 +600,12 @@
     function renderCustom() {
       document.querySelectorAll('.custom-shortcut').forEach(e => e.remove());
       const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
-      shortcuts.forEach(s => {
+      shortcuts.forEach((s, i) => {
         const div = document.createElement('div');
         div.className = 'shortcut custom-shortcut';
         div.dataset.url = s.url;
-        div.innerHTML = `<div class="shortcut-icon"><i class="fa-solid fa-link"></i></div><span class="shortcut-label">${s.name}</span>`;
+        div.dataset.testid = 'custom-shortcut';
+        div.innerHTML = `<button class="shortcut-remove" data-idx="${i}" data-testid="remove-shortcut" title="Remove">&times;</button><div class="shortcut-icon"><i class="fa-solid fa-link"></i></div><span class="shortcut-label">${s.name}</span>`;
         $('#addShortcut').before(div);
       });
     }
