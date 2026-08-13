@@ -67,6 +67,9 @@
                     <div class="sidebar-item" data-pane="pane-bookmarks">
                         <i class="fa-solid fa-star"></i> Bookmarks
                     </div>
+                    <div class="sidebar-item" data-pane="pane-history">
+                        <i class="fa-solid fa-clock-rotate-left"></i> History
+                    </div>
                 </nav>
 
                 <div class="settings-content">
@@ -122,6 +125,14 @@
                     <div class="settings-pane hidden" id="pane-bookmarks">
                         <div class="section-title">Saved Bookmarks</div>
                         <div class="server-list" id="bookmark-list"></div>
+                    </div>
+
+                    <div class="settings-pane hidden" id="pane-history">
+                        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                            <span>Browsing History</span>
+                            <button id="clear-history-btn" data-testid="clear-history-btn" style="background:rgba(224,108,108,0.15);color:#e06c6c;border:1px solid rgba(224,108,108,0.3);padding:6px 14px;border-radius:10px;font-size:0.8rem;cursor:pointer;">Clear all</button>
+                        </div>
+                        <div class="server-list" id="history-list"></div>
                     </div>
 
                 </div> </div> <div class="settings-footer">

@@ -308,6 +308,7 @@ function createTab(makeActive = true) {
         tab.url = e.url;
         tab.loading = true;
         tab.loadStartTime = Date.now();
+        recordHistory(e.url);
 
         if (tab.id === activeTabId) {
             showIframeLoading(true, tab.url);
@@ -531,6 +532,9 @@ function openSettings() {
     renderServerList();
     renderCloaks();
     renderBookmarksList();
+    renderHistoryList();
+    const clearBtn = document.getElementById('clear-history-btn');
+    if (clearBtn) clearBtn.onclick = () => { localStorage.removeItem('flint_history'); renderHistoryList(); };
 }
 
 function renderCloaks() {
@@ -808,18 +812,71 @@ function updateBookmarkIcon() {
     icon.className = saved ? 'fa-solid fa-star' : 'fa-regular fa-star';
 }
 
+/* ---------------- History ---------------- */
+function getHistory() {
+    try { return JSON.parse(localStorage.getItem('flint_history') || '[]'); } catch (e) { return []; }
+}
+function recordHistory(url) {
+    if (!url || !/^https?:\/\//i.test(url)) return;
+    // skip internal Flint pages
+    if (/\/pages\/(nt|g|a|movies|shows|vms|ch4t|calling|music|window)\.html|\/window\.html|\/index\.html/i.test(url)) return;
+    let host;
+    try { host = new URL(url).hostname.replace('www.', ''); } catch (e) { return; }
+    const list = getHistory();
+    if (list[0] && list[0].url === url) return; // dedupe consecutive
+    list.unshift({ url, title: host, time: Date.now() });
+    localStorage.setItem('flint_history', JSON.stringify(list.slice(0, 200)));
+}
+function renderHistoryList() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    const hist = getHistory();
+    list.innerHTML = '';
+    if (!hist.length) {
+        list.innerHTML = '<div class="bm-empty">No history yet. Pages you browse through Flint show up here.</div>';
+        return;
+    }
+    hist.forEach((h, i) => {
+        const when = new Date(h.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const item = document.createElement('div');
+        item.className = 'bm-item';
+        item.dataset.testid = 'history-item';
+        item.innerHTML = `
+            <div style="min-width:0;">
+                <div class="bm-title">${h.title}</div>
+                <div class="bm-url">${h.url}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <span style="font-size:0.7rem;color:#777;white-space:nowrap;">${when}</span>
+                <button class="bm-del" title="Remove" data-testid="history-delete"><i class="fa-solid fa-xmark"></i></button>
+            </div>`;
+        item.querySelector('.bm-del').onclick = (ev) => {
+            ev.stopPropagation();
+            const h2 = getHistory();
+            h2.splice(i, 1);
+            localStorage.setItem('flint_history', JSON.stringify(h2));
+            renderHistoryList();
+        };
+        item.onclick = () => {
+            document.getElementById('wisp-settings-modal').classList.add('hidden');
+            handleSubmit(h.url);
+        };
+        list.appendChild(item);
+    });
+}
+
 /* ---------------- Cloak (preset only) ---------------- */
 const CLOAKS = {
     none:      { label: 'None (Flint)', title: 'Flint', icon: '' },
-    classroom: { label: 'Google Classroom', title: 'Home', icon: 'https://www.google.com/s2/favicons?sz=64&domain=classroom.google.com' },
-    docs:      { label: 'Google Docs', title: 'Google Docs', icon: 'https://www.google.com/s2/favicons?sz=64&domain=docs.google.com' },
-    drive:     { label: 'Google Drive', title: 'Home - Google Drive', icon: 'https://www.google.com/s2/favicons?sz=64&domain=drive.google.com' },
-    slides:    { label: 'Google Slides', title: 'Google Slides', icon: 'https://www.google.com/s2/favicons?sz=64&domain=slides.google.com' },
-    gmail:     { label: 'Gmail', title: 'Inbox', icon: 'https://www.google.com/s2/favicons?sz=64&domain=mail.google.com' },
-    clever:    { label: 'Clever', title: 'Clever | Portal', icon: 'https://www.google.com/s2/favicons?sz=64&domain=clever.com' },
-    canvas:    { label: 'Canvas', title: 'Dashboard', icon: 'https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com' },
-    wikipedia: { label: 'Wikipedia', title: 'Wikipedia', icon: 'https://www.google.com/s2/favicons?sz=64&domain=wikipedia.org' },
-    khan:      { label: 'Khan Academy', title: 'Dashboard | Khan Academy', icon: 'https://www.google.com/s2/favicons?sz=64&domain=khanacademy.org' }
+    classroom: { label: 'Google Classroom', title: 'Home', icon: 'https://www.google.com/s2/favicons?sz=128&domain=classroom.google.com' },
+    docs:      { label: 'Google Docs', title: 'Google Docs', icon: 'https://www.google.com/s2/favicons?sz=128&domain=docs.google.com' },
+    drive:     { label: 'Google Drive', title: 'Home - Google Drive', icon: 'https://www.google.com/s2/favicons?sz=128&domain=drive.google.com' },
+    slides:    { label: 'Google Slides', title: 'Google Slides', icon: 'https://www.google.com/s2/favicons?sz=128&domain=slides.google.com' },
+    gmail:     { label: 'Gmail', title: 'Inbox', icon: 'https://www.google.com/s2/favicons?sz=128&domain=mail.google.com' },
+    clever:    { label: 'Clever', title: 'Clever | Portal', icon: 'https://www.google.com/s2/favicons?sz=128&domain=clever.com' },
+    canvas:    { label: 'Canvas', title: 'Dashboard', icon: 'https://www.google.com/s2/favicons?sz=128&domain=canvas.instructure.com' },
+    wikipedia: { label: 'Wikipedia', title: 'Wikipedia', icon: 'https://www.google.com/s2/favicons?sz=128&domain=wikipedia.org' },
+    khan:      { label: 'Khan Academy', title: 'Dashboard | Khan Academy', icon: 'https://www.google.com/s2/favicons?sz=128&domain=khanacademy.org' }
 };
 
 let _cloakKey = 'none';

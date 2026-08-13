@@ -26,6 +26,8 @@
     .vm-ico { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px; }
     .vm-ico.win { background: linear-gradient(135deg, #0078d4, #00a4ef); color: #fff; }
     .vm-ico.penguin { background: linear-gradient(135deg, #dd4814, #77216f); color: #fff; }
+    .vm-ico.android { background: linear-gradient(135deg, #3ddc84, #073042); padding: 9px; }
+    .vm-ico img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .vm-card h3 { font-size: 1.25rem; margin-bottom: 6px; }
     .vm-card .tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-soft); margin-bottom: 12px; }
     .vm-card p { color: var(--text-soft); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; }
@@ -64,6 +66,30 @@
         <h3>OnWorks Ubun7u</h3>
         <div class="tag">Free · Online L1nux</div>
         <p>A free online Ubun7u desktop. Tap to open, then press "RUN ONLINE" to boot the Ubun7u virtual machine right here.</p>
+        <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
+      </div>
+
+      <div class="vm-card" data-testid="vm-win11" data-url="https://win11.blueedge.me/" data-name="W1nd0ws 11 Demo">
+        <div class="vm-ico win"><i class="fa-solid fa-window-maximize"></i></div>
+        <h3>W1nd0ws 11 Demo</h3>
+        <div class="tag">Demo · Desktop</div>
+        <p>A full W1nd0ws 11 desktop experience right in your browser — Start menu, apps, and settings. No trial, no login.</p>
+        <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
+      </div>
+
+      <div class="vm-card" data-testid="vm-android" data-url="https://www.myandroid.org/run/start.php" data-name="Andr01d Emulator">
+        <div class="vm-ico penguin"><i class="fa-solid fa-mobile-screen-button"></i></div>
+        <h3>Andr01d Emulator</h3>
+        <div class="tag">Free · Mobile OS</div>
+        <p>Run a real Andr01d phone in your browser — install apps and games. Tap to launch the online emulator.</p>
+        <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
+      </div>
+
+      <div class="vm-card" data-testid="vm-android-appetize" data-url="https://appetize.io/embed/xc1w6f1krd589zhp22a0mgftyw?autoplay=false&debug=true&device=pixel4&embed=true&launchUrl=exp%3A%2F%2Fexp.host%2F%40snack%2Fsdk.46.0.0-ghV0%21Qgb8N&scale=65&screenOnly=false&xDocMsg=true&xdocMsg=true&params=%7B&osVersion=11.0&deviceColor=black" data-name="Andr01d Pixel 4">
+        <div class="vm-ico android"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Android_robot.svg/960px-Android_robot.svg.png" alt="Andr01d"></div>
+        <h3>Andr01d Pixel 4</h3>
+        <div class="tag">Free · Pixel 4 · OS 11</div>
+        <p>A hosted Pixel 4 device running Andr01d 11 in your browser. Tap Launch, then press the play button to boot the device.</p>
         <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
       </div>
     </div>
