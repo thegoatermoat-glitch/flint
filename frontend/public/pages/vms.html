@@ -25,7 +25,7 @@
     .vm-card:hover { transform: translateY(-4px); border-color: var(--border-hover); }
     .vm-ico { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px; }
     .vm-ico.win { background: linear-gradient(135deg, #0078d4, #00a4ef); color: #fff; }
-    .vm-ico.ubuntu { background: linear-gradient(135deg, #dd4814, #77216f); color: #fff; }
+    .vm-ico.penguin { background: linear-gradient(135deg, #dd4814, #77216f); color: #fff; }
     .vm-card h3 { font-size: 1.25rem; margin-bottom: 6px; }
     .vm-card .tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-soft); margin-bottom: 12px; }
     .vm-card p { color: var(--text-soft); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; }
@@ -51,19 +51,19 @@
     <div class="subtitle">Full desktops in your browser — loaded through the pr0xy</div>
 
     <div class="cards">
-      <div class="vm-card" data-testid="vm-apponfly" data-url="https://www.apponfly.com/" data-name="AppOnFly — Windows Cloud PC">
-        <div class="vm-ico win"><i class="fa-brands fa-windows"></i></div>
-        <h3>AppOnFly Windows PC</h3>
-        <div class="tag">Free Trial · Cloud Windows</div>
-        <p>A real cloud Windows desktop in your browser. Tap to open AppOnFly and hit "Try for free" to start your trial session.</p>
+      <div class="vm-card" data-testid="vm-apponfly" data-url="https://app.apponfly.com/trial" data-name="AppOnFly — W1nd0ws Cloud PC">
+        <div class="vm-ico win"><i class="fa-solid fa-desktop"></i></div>
+        <h3>AppOnFly W1nd0ws PC</h3>
+        <div class="tag">Free Trial · Cloud W1nd0ws</div>
+        <p>A real cloud W1nd0ws desktop in your browser. Tap to open AppOnFly and hit "Try for free" to start your trial session.</p>
         <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
       </div>
 
-      <div class="vm-card" data-testid="vm-onworks" data-url="https://www.onworks.net/os-distributions/ubuntu-based/free-ubuntu-online-version-20" data-name="OnWorks — Ubuntu Online">
-        <div class="vm-ico ubuntu"><i class="fa-brands fa-ubuntu"></i></div>
-        <h3>OnWorks Ubuntu</h3>
-        <div class="tag">Free · Online Linux</div>
-        <p>A free online Ubuntu desktop. Tap to open, then press "RUN ONLINE" to boot the Ubuntu virtual machine right here.</p>
+      <div class="vm-card" data-testid="vm-onworks" data-url="https://www.onworks.net/os-distributions/ubuntu-based/free-ubuntu-online-version-20" data-name="OnWorks — Ubun7u Online">
+        <div class="vm-ico penguin"><i class="fa-solid fa-terminal"></i></div>
+        <h3>OnWorks Ubun7u</h3>
+        <div class="tag">Free · Online L1nux</div>
+        <p>A free online Ubun7u desktop. Tap to open, then press "RUN ONLINE" to boot the Ubun7u virtual machine right here.</p>
         <button class="vm-launch"><i class="fa-solid fa-play"></i> Launch</button>
       </div>
     </div>
@@ -98,11 +98,17 @@
       return url;
     };
 
+    // Run the VM through the Flint pr0xy: navigate the actual pr0xy browser tab
+    // to the VM (full screen real estate + the browser's own fullscreen button).
     const openVM = (url, title) => {
+      if (window.parent && window.parent !== window) {
+        try { window.parent.postMessage({ type: 'navigate', url }, '*'); return; } catch (e) {}
+      }
+      // Standalone fallback: open in the in-page player.
       playerTitle.textContent = title;
       playerFrame.innerHTML = '';
       const iframe = document.createElement('iframe');
-      iframe.src = toProxied(url);
+      iframe.src = url;
       iframe.allow = 'autoplay; fullscreen; clipboard-read; clipboard-write; camera; microphone';
       iframe.allowFullscreen = true;
       iframe.dataset.testid = 'vm-player-iframe';

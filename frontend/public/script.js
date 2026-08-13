@@ -822,13 +822,59 @@ const CLOAKS = {
     khan:      { label: 'Khan Academy', title: 'Dashboard | Khan Academy', icon: 'https://www.google.com/s2/favicons?sz=64&domain=khanacademy.org' }
 };
 
+let _cloakKey = 'none';
+let _cloakGuardOn = false;
+
+function _cloakDocs() {
+    const docs = [document];
+    try { if (window.top && window.top !== window && window.top.document) docs.push(window.top.document); } catch (e) {}
+    return docs;
+}
+
+function enforceCloak() {
+    if (_cloakKey === 'none') return;
+    const c = CLOAKS[_cloakKey];
+    if (!c) return;
+    _cloakDocs().forEach(doc => {
+        try {
+            if (doc.title !== c.title) doc.title = c.title;
+            let link = doc.querySelector("link[rel~='icon']");
+            if (!link) { link = doc.createElement('link'); link.rel = 'icon'; doc.head.appendChild(link); }
+            if (c.icon && link.href !== c.icon) link.href = c.icon;
+        } catch (e) {}
+    });
+}
+
+// The proxy rewrites window.top's <title> to the proxied page's title as you
+// browse, which would blow the cloak. Watch for those changes and re-apply.
+function setupCloakGuard() {
+    if (_cloakGuardOn) return;
+    _cloakGuardOn = true;
+    _cloakDocs().forEach(doc => {
+        try {
+            let t = doc.querySelector('title');
+            if (!t) { t = doc.createElement('title'); doc.head.appendChild(t); }
+            new MutationObserver(enforceCloak).observe(doc.head, { childList: true, subtree: true, characterData: true });
+        } catch (e) {}
+    });
+    setInterval(enforceCloak, 1200);
+}
+
 function applyCloak(key) {
-    const c = CLOAKS[key] || CLOAKS.none;
-    document.title = c.title;
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-    if (c.icon) link.href = c.icon;
-    else link.href = 'images/favicon.ico';
+    _cloakKey = (CLOAKS[key] ? key : 'none');
+    const c = CLOAKS[_cloakKey];
+    // For 'none' don't clobber window.top — the launcher (index.html) may have
+    // set a default disguise there; only touch this (hidden) document.
+    const docs = _cloakKey === 'none' ? [document] : _cloakDocs();
+    docs.forEach(doc => {
+        try {
+            doc.title = c.title;
+            let link = doc.querySelector("link[rel~='icon']");
+            if (!link) { link = doc.createElement('link'); link.rel = 'icon'; doc.head.appendChild(link); }
+            link.href = c.icon || 'images/favicon.ico';
+        } catch (e) {}
+    });
+    if (_cloakKey !== 'none') setupCloakGuard();
 }
 
 function setCloak(key) { localStorage.setItem('flint_cloak', key); applyCloak(key); }
