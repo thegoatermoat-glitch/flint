@@ -203,6 +203,50 @@ async function proactiveServerCheck() {
     }
 }
 
+// Some CDNs (notably cdn.jsdelivr.net/gh/ and raw.githubusercontent.com) serve
+// game .html files as "text/plain" with "nosniff", so a proxied iframe would
+// render the raw markup instead of running the g4m3. Force an HTML content-type
+// for .html/.htm documents mis-served as text so Scramjet renders + rewrites
+// them (and their assets keep flowing through the pr0xy).
+function fixGameContentType(url, resp) {
+    try {
+        const ct = (resp.headers.get("content-type") || "").toLowerCase();
+        if (!ct.includes("text/plain")) return resp;
+        let path;
+        try { path = new URL(url).pathname.toLowerCase(); } catch { path = String(url).toLowerCase(); }
+        if (!(path.endsWith(".html") || path.endsWith(".htm"))) return resp;
+        // IMPORTANT: Scramjet builds the FINAL response headers from
+        // `response.rawHeaders` (a BareClient-specific plain object), not from
+        // `response.headers`. Creating a new Response() loses rawHeaders, so the
+        // browser kept receiving the upstream `text/plain`. Mutate rawHeaders in
+        // place (and mirror onto .headers when it is mutable) and return the SAME
+        // response object so Scramjet's rewriter + header path both see text/html.
+        const raw = resp.rawHeaders;
+        if (raw && typeof raw === "object") {
+            for (const k of Object.keys(raw)) {
+                const lk = k.toLowerCase();
+                if (lk === "content-type" || lk === "x-content-type-options") delete raw[k];
+            }
+            raw["content-type"] = "text/html; charset=utf-8";
+        }
+        try {
+            resp.headers.set("content-type", "text/html; charset=utf-8");
+            resp.headers.delete("x-content-type-options");
+            return resp;
+        } catch (e) {
+            const headers = new Headers(resp.headers);
+            headers.set("content-type", "text/html; charset=utf-8");
+            headers.delete("x-content-type-options");
+            const out = new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
+            try { Object.defineProperty(out, "rawHeaders", { value: raw, configurable: true }); } catch (e2) {}
+            try { Object.defineProperty(out, "finalURL", { value: resp.finalURL, configurable: true }); } catch (e2) {}
+            return out;
+        }
+    } catch (e) {
+        return resp;
+    }
+}
+
 self.addEventListener("message", ({ data }) => {
     if (data.type === "config") {
         if (data.wispurl) {
@@ -278,7 +322,7 @@ scramjet.addEventListener("request", async (e) => {
 
         for (let i = 0; i <= MAX_RETRIES; i++) {
             try {
-                return await scramjet.client.fetch(e.url, {
+                const resp = await scramjet.client.fetch(e.url, {
                     method: e.method,
                     body: e.body,
                     headers: e.requestHeaders,
@@ -288,6 +332,7 @@ scramjet.addEventListener("request", async (e) => {
                     redirect: "manual",
                     duplex: "half",
                 });
+                return fixGameContentType(e.url, resp);
             } catch (err) {
                 lastErr = err;
                 const errMsg = err.message.toLowerCase();

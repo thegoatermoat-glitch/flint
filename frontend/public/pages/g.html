@@ -64,6 +64,7 @@
       align-items: center;
       justify-content: center;
       z-index: 2000;
+      pointer-events: none;
     }
 
     .loader.show { display: flex; }
@@ -362,43 +363,27 @@ function appendGame(game) {
 
     const iframe = createFreshIframe();
 
-    if (game.description === "iframe") {
-      // Internet Archive games route through the Flint proxy (works even if
-      // archive.org is blocked); other embeds load directly.
-      let src = game.src;
-      if (src.includes('archive.org')) {
-        try {
-          if (window.parent && window.parent !== window && window.parent.flintProxyEncode) {
-            const p = window.parent.flintProxyEncode(src);
-            if (p) src = p;
-          }
-        } catch (e) {}
-      }
-      iframe.src = src;
-      iframe.onload = () => $('#loader').classList.remove('show');
-    } else {
-      fetch(game.src)
-        .then(r => r.text())
-        .then(html => {
-          // Inject a <base> so the game's relative asset paths (js/img/wasm)
-          // resolve against its real host instead of the Flint origin.
-          const baseHref = game.src.substring(0, game.src.lastIndexOf('/') + 1);
-          const baseTag = `<base href="${baseHref}">`;
-          if (/<head[^>]*>/i.test(html)) {
-            html = html.replace(/<head[^>]*>/i, m => m + baseTag);
-          } else if (/<html[^>]*>/i.test(html)) {
-            html = html.replace(/<html[^>]*>/i, m => m + baseTag);
-          } else {
-            html = baseTag + html;
-          }
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          doc.open();
-          doc.write(html);
-          doc.close();
-          $('#loader').classList.remove('show');
-        })
-        .catch(() => $('#loader').classList.remove('show'));
+    // Route EVERY game through the Flint pr0xy (Scramjet + WISP) so it loads
+    // even when the host (jsdelivr, githack, archive.org, etc.) is bl0ck3d.
+    // Scramjet rewrites all of the game's relative + absolute assets to also
+    // travel through the pr0xy.
+    let src = game.src;
+    const isForm = src.includes('docs.google.com'); // the "request game" form isn't a game
+    if (!isForm) {
+      try {
+        if (window.parent && window.parent !== window && window.parent.flintProxyEncode) {
+          const p = window.parent.flintProxyEncode(src);
+          if (p) src = p;
+        }
+      } catch (e) {}
     }
+    iframe.src = src;
+    let loaderHidden = false;
+    const hideLoader = () => { if (!loaderHidden) { loaderHidden = true; $('#loader').classList.remove('show'); } };
+    iframe.onload = hideLoader;
+    // Fallback: some g4m3s (Unity / archive.org emulators) fire onload before or
+    // after they visually start, leaving the spinner covering a running game.
+    setTimeout(hideLoader, 6000);
   });
 
   gameList.appendChild(a);
