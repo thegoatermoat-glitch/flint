@@ -1,22 +1,34 @@
-// Vercel Serverless Function: FlintAI chat via Google Gemini.
+// Vercel Serverless Function: FlintAI chat via OpenRouter (OpenAI-compatible).
 // Served at https://<your-domain>/api/ai/chat (Vercel auto-detects /api).
 //
-// The Gemini API key is read from the GEMINI_API_KEY environment variable, so
-// it stays server-side and is NEVER exposed in the static page source.
+// The OpenRouter API key is read from the OPENROUTER_API_KEY environment
+// variable, so it stays server-side and is NEVER exposed in the static page.
 // Set it in Vercel -> Project -> Settings -> Environment Variables:
-//   GEMINI_API_KEY = <your key from https://aistudio.google.com/apikey>
+//   OPENROUTER_API_KEY = <your key from https://openrouter.ai/keys>
+// Optionally override the model with OPENROUTER_MODEL.
 //
 // Request body (stateless full history):
 //   { "system": "persona...", "messages": [ { "role": "user"|"assistant",
 //     "text": "...", "images": ["data:image/png;base64,...."] }, ... ] }
 // Response: { "reply": "..." }
 
-const MODEL = "gemini-flash-latest"; // dynamic alias -> current Gemini Flash
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DEFAULT_MODEL = "google/gemini-3-flash-preview"; // Gemini 3 Flash via OpenRouter
 
-function parseDataUrl(u) {
-  const m = /^data:([^;]+);base64,(.*)$/.exec(u || "");
-  if (m) return { mime_type: m[1], data: m[2] };
-  return { mime_type: "image/jpeg", data: (u || "").replace(/^data:[^,]*,/, "") };
+function toOpenAIMessages(system, messages) {
+  const out = [{ role: "system", content: system || "You are FlintAI, a helpful assistant." }];
+  for (const m of messages) {
+    if (Array.isArray(m.images) && m.images.length) {
+      const content = [{ type: "text", text: m.text || "" }];
+      for (const url of m.images) {
+        if (url) content.push({ type: "image_url", image_url: { url } });
+      }
+      out.push({ role: m.role, content });
+    } else {
+      out.push({ role: m.role, content: m.text || "" });
+    }
+  }
+  return out;
 }
 
 module.exports = async function handler(req, res) {
@@ -24,9 +36,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ detail: "Method not allowed" });
   }
 
-  const key = process.env.GEMINI_API_KEY;
+  const key = process.env.OPENROUTER_API_KEY;
   if (!key) {
-    return res.status(500).json({ detail: "GEMINI_API_KEY is not configured on the server." });
+    return res.status(500).json({ detail: "OPENROUTER_API_KEY is not configured on the server." });
   }
 
   let body = req.body;
@@ -39,41 +51,31 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ detail: "messages is required" });
   }
 
-  const contents = messages.map((m) => {
-    const parts = [];
-    if (m.text) parts.push({ text: m.text });
-    for (const img of m.images || []) {
-      const { mime_type, data } = parseDataUrl(img);
-      if (data) parts.push({ inline_data: { mime_type, data } });
-    }
-    return { role: m.role === "assistant" ? "model" : "user", parts };
-  });
-
   const payload = {
-    contents,
-    generationConfig: { temperature: 0.7 },
-    safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-    ],
+    model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
+    messages: toOpenAIMessages(system, messages),
+    temperature: 0.7,
   };
-  if (system) payload.systemInstruction = { parts: [{ text: system }] };
 
   try {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(key)}`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
-    );
+    const r = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://flin.space",
+        "X-Title": "Flint",
+      },
+      body: JSON.stringify(payload),
+    });
     const data = await r.json();
-    if (data.error) {
-      return res.status(502).json({ detail: data.error.message || "Gemini request failed" });
+    if (r.status >= 400 || data.error) {
+      const msg = data.error && (data.error.message || data.error);
+      return res.status(502).json({ detail: msg || `OpenRouter error (${r.status})` });
     }
-    const reply =
-      (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("") || "(no response)";
+    const reply = data.choices?.[0]?.message?.content || "(no response)";
     return res.status(200).json({ reply });
   } catch (e) {
     return res.status(502).json({ detail: String(e && e.message ? e.message : e) });
   }
-}
+};

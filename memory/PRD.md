@@ -107,6 +107,13 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
   - **Emergent preview (testing):** FastAPI `/api/ai/chat` updated to the same stateless contract using the Emergent key + `emergentintegrations` (flattens prior turns into a transcript since LlmChat can't be pre-seeded). Verified live: text, multi-turn ("Teal.", "7"), vision ("A red circle."), and the UI end-to-end.
   - ⚠️ **User action to activate on flin.space (Vercel):** (1) get a free key at https://aistudio.google.com/apikey; (2) Vercel → Project → Settings → Environment Variables → add `GEMINI_API_KEY` = <key> (Production + Preview); (3) redeploy — the `/api/ai/chat` function ships automatically. The key stays server-side (never in page source). Optionally restrict the key (Google Cloud → API key → set an HTTP-referrer restriction + daily quota).
 
+## Work Done (2026-07, cont.) — FlintAI switched to OpenRouter
+- Per user request, FlintAI now uses **OpenRouter** (OpenAI-compatible) instead of Gemini-direct/Emergent. Model: **`google/gemini-3-flash-preview`** (Gemini 3 Flash; configurable via `OPENROUTER_MODEL`). Endpoint `https://openrouter.ai/api/v1/chat/completions` with `Authorization: Bearer <OPENROUTER_API_KEY>` + `HTTP-Referer`/`X-Title` headers.
+  - **Vercel function** (`/app/api/ai/chat.js`, CommonJS): reads `process.env.OPENROUTER_API_KEY`, converts the `{system, messages:[{role,text,images}]}` contract → OpenAI messages (system + user/assistant; images as `image_url` data URLs), returns `{reply}`.
+  - **FastAPI preview** (`server.py`): same contract via `httpx` → OpenRouter (dropped `emergentintegrations`/`EMERGENT_LLM_KEY` usage for this endpoint). `OPENROUTER_API_KEY` added to `backend/.env`. Handled errors return HTTP 400 (not 5xx) so the message isn't masked by the preview's Cloudflare layer.
+  - Verified live (curl + UI): text ("PONG"/"FLINT-OK"), multi-turn ("Teal."), vision ("Red circle."). Model slug validated against OpenRouter's live `/models` list (the earlier `gemini-flash-latest` alias was invalid → 400).
+  - ⚠️ **Security**: the OpenRouter key was shared in chat — recommend rotating it at https://openrouter.ai/keys. On Vercel, set env var **`OPENROUTER_API_KEY`** (Production+Preview) then redeploy; the key stays server-side (never in page source). Optional: set `OPENROUTER_MODEL` to change models.
+
 ## Work Done (2026-07, cont.) — domain switch, Open-in-new-tab, leave-guard
 - **L1nk domain** switched from `fl1.space` → **`flin.space`** (user now hosts the domain on Vercel). Updated `pages/link.html` (`DOMAIN` const + on-page copy).
 - **L1nk "Open" button** now always opens the generated link in a **new browser tab** (`window.open(url,'_blank','noopener')`) instead of navigating inside the Flint site/pr0xy.

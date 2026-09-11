@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 import uuid
 from datetime import datetime, timezone
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+import httpx
 
 
 ROOT_DIR = Path(__file__).parent
@@ -69,13 +69,14 @@ async def get_status_checks():
 
 
 # ---------------------------------------------------------------------------
-# FlintAI chat (Google Gemini 3 Flash via the Emergent universal LLM key).
-# Stateless full-history contract so the SAME /api/ai/chat path is served by a
-# Vercel serverless function (Google key) in production and by this FastAPI
-# backend (Emergent key) in the Emergent preview.
+# FlintAI chat via OpenRouter (OpenAI-compatible). Stateless full-history
+# contract so the SAME /api/ai/chat path is served by a Vercel serverless
+# function in production and by this FastAPI backend in the Emergent preview.
+# The OpenRouter key stays server-side (env var), never in the page source.
 # ---------------------------------------------------------------------------
-EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
-AI_MODEL = ("gemini", "gemini-3-flash-preview")
+OPENROUTER_API_KEY = os.environ['OPENROUTER_API_KEY']
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+AI_MODEL = "google/gemini-3-flash-preview"  # OpenRouter model slug (Gemini 3 Flash)
 DEFAULT_SYSTEM = "You are FlintAI, a helpful assistant."
 
 
@@ -90,10 +91,18 @@ class AIChatRequest(BaseModel):
     messages: List[AITurn] = []
 
 
-def _strip_data_url(u: str) -> str:
-    if u.startswith("data:") and "," in u:
-        return u.split(",", 1)[1]
-    return u
+def _to_openai_messages(req: AIChatRequest) -> list:
+    msgs = [{"role": "system", "content": req.system or DEFAULT_SYSTEM}]
+    for m in req.messages:
+        if m.images:
+            content = [{"type": "text", "text": m.text or ""}]
+            for url in m.images:
+                if url:
+                    content.append({"type": "image_url", "image_url": {"url": url}})
+            msgs.append({"role": m.role, "content": content})
+        else:
+            msgs.append({"role": m.role, "content": m.text or ""})
+    return msgs
 
 
 @api_router.post("/ai/chat")
@@ -101,36 +110,32 @@ async def ai_chat(req: AIChatRequest):
     if not req.messages:
         raise HTTPException(status_code=400, detail="messages is required")
 
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=str(uuid.uuid4()),
-        system_message=req.system or DEFAULT_SYSTEM,
-    ).with_model(*AI_MODEL)
-
-    # LlmChat can't be pre-seeded with prior turns, so flatten earlier turns
-    # into a transcript that precedes the latest user message (keeps context
-    # while staying fully stateless).
-    prior, last = req.messages[:-1], req.messages[-1]
-    parts = []
-    if prior:
-        transcript = "\n".join(
-            f"{'User' if m.role == 'user' else 'Assistant'}: {m.text}" for m in prior if m.text
-        )
-        if transcript:
-            parts.append("Previous conversation:\n" + transcript + "\n\nCurrent message:")
-    parts.append(last.text or "")
-    text = "\n".join(parts)
-
-    file_contents = [ImageContent(image_base64=_strip_data_url(u)) for u in (last.images or []) if u]
-    user_msg = UserMessage(text=text, file_contents=file_contents) if file_contents else UserMessage(text=text)
-
+    payload = {
+        "model": AI_MODEL,
+        "messages": _to_openai_messages(req),
+        "temperature": 0.7,
+    }
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://flin.space",
+        "X-Title": "Flint",
+    }
     try:
-        reply = await chat.send_message(user_msg)
+        async with httpx.AsyncClient(timeout=90) as client:
+            r = await client.post(OPENROUTER_URL, headers=headers, json=payload)
+        data = r.json()
+        if r.status_code >= 400 or "error" in data:
+            msg = (data.get("error") or {}).get("message") if isinstance(data.get("error"), dict) else data.get("error")
+            raise HTTPException(status_code=400, detail=msg or f"OpenRouter error ({r.status_code})")
+        reply = data["choices"][0]["message"]["content"]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("FlintAI chat error")
-        raise HTTPException(status_code=502, detail=f"AI error: {e}")
+        raise HTTPException(status_code=400, detail=f"AI error: {e}")
 
-    return {"reply": reply if isinstance(reply, str) else str(reply)}
+    return {"reply": reply}
 
 # Include the router in the main app
 app.include_router(api_router)
