@@ -148,6 +148,21 @@
    <iframe id="main-frame" src="window.html" sandbox="allow-scripts allow-forms allow-same-origin allow-modals"></iframe>
 
     <script>
+        // Show the browser's native "Leave site?" confirmation before this tab
+        // is closed or navigated away. This interrupts forced tab-closes from
+        // classroom monitoring tools so the student can cancel. Applied ONLY to
+        // the real Flint tab (not the decoy-redirecting launcher tab), otherwise
+        // it would prompt during the intended silent cloak redirect.
+        function enableLeaveGuard(w) {
+            try {
+                w.addEventListener('beforeunload', function (e) {
+                    e.preventDefault();
+                    e.returnValue = 'Are you sure you want to leave?';
+                    return 'Are you sure you want to leave?';
+                });
+            } catch (e) {}
+        }
+
         window.onload = function() {
             particlesJS('particles-js', {
                 "particles": {
@@ -166,6 +181,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             
             if (urlParams.has('cloaked')) {
+                enableLeaveGuard(window);
                 document.getElementById('main-frame').style.display = 'block';
                 document.getElementById('init-overlay').style.display = 'none';
                 document.getElementById('particles-js').style.opacity = '0.1';
@@ -220,6 +236,7 @@
         }
 
         function launchInCurrentTab() {
+            enableLeaveGuard(window);
             const c = getCloak();
             document.title = c.title;
             let link = document.querySelector("link[rel~='icon']");
@@ -250,6 +267,9 @@
             
             win.document.body.style.margin = "0";
             win.document.body.appendChild(iframe);
+
+            // Guard the real Flint tab (the about:blank popup) against forced closes.
+            enableLeaveGuard(win);
 
             window.location.replace('https://classroom.google.com');
         }

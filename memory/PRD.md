@@ -91,3 +91,9 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 
 ## Backlog additions
 - P1: user to point the FlintAI key-proxy worker at a Google Gemini API key (or set GEMINI_API_KEY) to activate the AI.
+
+## Work Done (2026-07, cont.) — domain switch, Open-in-new-tab, leave-guard
+- **L1nk domain** switched from `fl1.space` → **`flin.space`** (user now hosts the domain on Vercel). Updated `pages/link.html` (`DOMAIN` const + on-page copy).
+- **L1nk "Open" button** now always opens the generated link in a **new browser tab** (`window.open(url,'_blank','noopener')`) instead of navigating inside the Flint site/pr0xy.
+- **Leave-guard (anti tab-close)**: added a `beforeunload` "Are you sure you want to leave?" confirmation to interrupt forced tab-closes (e.g. GoGuardian). Implemented via `enableLeaveGuard(w)` in `index.html`, attached ONLY to the real Flint tab: the `?cloaked=true` context, `launchInCurrentTab()`, and the `about:blank` cloak popup (`setupCloak`). Deliberately NOT attached to the original launcher tab (it silently `location.replace`s to the classroom decoy) so cloaking isn't broken by a stray prompt. Verified the guard intercepts `beforeunload` (defaultPrevented) in the cloaked real-tab context.
+
