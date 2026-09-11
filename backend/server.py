@@ -70,38 +70,59 @@ async def get_status_checks():
 
 # ---------------------------------------------------------------------------
 # FlintAI chat (Google Gemini 3 Flash via the Emergent universal LLM key).
-# The key stays server-side. Per-session LlmChat instances keep multi-turn
-# history in memory (keyed by the frontend's session_id).
+# Stateless full-history contract so the SAME /api/ai/chat path is served by a
+# Vercel serverless function (Google key) in production and by this FastAPI
+# backend (Emergent key) in the Emergent preview.
 # ---------------------------------------------------------------------------
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 AI_MODEL = ("gemini", "gemini-3-flash-preview")
 DEFAULT_SYSTEM = "You are FlintAI, a helpful assistant."
-_ai_chats: dict = {}
+
+
+class AITurn(BaseModel):
+    role: str  # "user" | "assistant"
+    text: str = ""
+    images: List[str] = []  # data URLs, e.g. "data:image/png;base64,...."
 
 
 class AIChatRequest(BaseModel):
-    session_id: str
-    message: str
     system: str = ""
-    images: List[str] = []  # raw base64 strings (no data: prefix)
+    messages: List[AITurn] = []
+
+
+def _strip_data_url(u: str) -> str:
+    if u.startswith("data:") and "," in u:
+        return u.split(",", 1)[1]
+    return u
 
 
 @api_router.post("/ai/chat")
 async def ai_chat(req: AIChatRequest):
-    chat = _ai_chats.get(req.session_id)
-    if chat is None:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=req.session_id,
-            system_message=req.system or DEFAULT_SYSTEM,
-        ).with_model(*AI_MODEL)
-        _ai_chats[req.session_id] = chat
+    if not req.messages:
+        raise HTTPException(status_code=400, detail="messages is required")
 
-    file_contents = [ImageContent(image_base64=b64) for b64 in req.images if b64]
-    if file_contents:
-        user_msg = UserMessage(text=req.message, file_contents=file_contents)
-    else:
-        user_msg = UserMessage(text=req.message)
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=str(uuid.uuid4()),
+        system_message=req.system or DEFAULT_SYSTEM,
+    ).with_model(*AI_MODEL)
+
+    # LlmChat can't be pre-seeded with prior turns, so flatten earlier turns
+    # into a transcript that precedes the latest user message (keeps context
+    # while staying fully stateless).
+    prior, last = req.messages[:-1], req.messages[-1]
+    parts = []
+    if prior:
+        transcript = "\n".join(
+            f"{'User' if m.role == 'user' else 'Assistant'}: {m.text}" for m in prior if m.text
+        )
+        if transcript:
+            parts.append("Previous conversation:\n" + transcript + "\n\nCurrent message:")
+    parts.append(last.text or "")
+    text = "\n".join(parts)
+
+    file_contents = [ImageContent(image_base64=_strip_data_url(u)) for u in (last.images or []) if u]
+    user_msg = UserMessage(text=text, file_contents=file_contents) if file_contents else UserMessage(text=text)
 
     try:
         reply = await chat.send_message(user_msg)

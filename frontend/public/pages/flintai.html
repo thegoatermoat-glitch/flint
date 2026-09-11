@@ -225,14 +225,12 @@
     setGenerating(true);
     appendMessage('user', userMessage);
 
-    // Collect images (raw base64, no data: prefix) for this turn.
-    const images = [];
+    // Build this turn's content (text + any images as data URLs).
     let apiContent = userMessage;
     if (selectedFiles.length > 0) {
       apiContent = [{ type: 'text', text: userMessage }];
       for (let f of selectedFiles) {
         const b64 = await toBase64(f);
-        images.push(b64);
         apiContent.push({ type: 'image_url', image_url: { url: `data:${f.type || 'image/jpeg'};base64,${b64}` } });
       }
     }
@@ -241,10 +239,17 @@
     selectedFiles = [];
     document.getElementById('preview-bar').innerHTML = '';
 
-    // System prompt (persona) is applied server-side on the first turn of a session.
+    // The AI endpoint is stateless (works on Vercel serverless too), so we send
+    // the whole conversation each time. System persona is sent separately.
     const systemMsg = (currentHistory[0] && currentHistory[0].role === 'system')
       ? (typeof currentHistory[0].content === 'string' ? currentHistory[0].content : '')
       : '';
+    const messages = currentHistory.filter(m => m.role !== 'system').map(m => {
+      if (typeof m.content === 'string') return { role: m.role, text: m.content, images: [] };
+      const textPart = (m.content.find(c => c.type === 'text') || {}).text || '';
+      const imgs = m.content.filter(c => c.type === 'image_url').map(c => c.image_url.url);
+      return { role: m.role, text: textPart, images: imgs };
+    });
 
     const botRow = appendMessage('assistant', '...', true);
     abortController = new AbortController();
@@ -253,12 +258,7 @@
       const res = await fetch(AI_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: activeId,
-          message: userMessage,
-          system: systemMsg,
-          images
-        }),
+        body: JSON.stringify({ system: systemMsg, messages }),
         signal: abortController.signal
       });
 
