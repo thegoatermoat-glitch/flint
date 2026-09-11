@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 import uuid
 from datetime import datetime, timezone
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
 
 ROOT_DIR = Path(__file__).parent
@@ -65,6 +66,50 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     
     return status_checks
+
+
+# ---------------------------------------------------------------------------
+# FlintAI chat (Google Gemini 3 Flash via the Emergent universal LLM key).
+# The key stays server-side. Per-session LlmChat instances keep multi-turn
+# history in memory (keyed by the frontend's session_id).
+# ---------------------------------------------------------------------------
+EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
+AI_MODEL = ("gemini", "gemini-3-flash-preview")
+DEFAULT_SYSTEM = "You are FlintAI, a helpful assistant."
+_ai_chats: dict = {}
+
+
+class AIChatRequest(BaseModel):
+    session_id: str
+    message: str
+    system: str = ""
+    images: List[str] = []  # raw base64 strings (no data: prefix)
+
+
+@api_router.post("/ai/chat")
+async def ai_chat(req: AIChatRequest):
+    chat = _ai_chats.get(req.session_id)
+    if chat is None:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=req.session_id,
+            system_message=req.system or DEFAULT_SYSTEM,
+        ).with_model(*AI_MODEL)
+        _ai_chats[req.session_id] = chat
+
+    file_contents = [ImageContent(image_base64=b64) for b64 in req.images if b64]
+    if file_contents:
+        user_msg = UserMessage(text=req.message, file_contents=file_contents)
+    else:
+        user_msg = UserMessage(text=req.message)
+
+    try:
+        reply = await chat.send_message(user_msg)
+    except Exception as e:
+        logger.exception("FlintAI chat error")
+        raise HTTPException(status_code=502, detail=f"AI error: {e}")
+
+    return {"reply": reply if isinstance(reply, str) else str(reply)}
 
 # Include the router in the main app
 app.include_router(api_router)

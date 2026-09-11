@@ -92,6 +92,14 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 ## Backlog additions
 - P1: user to point the FlintAI key-proxy worker at a Google Gemini API key (or set GEMINI_API_KEY) to activate the AI.
 
+## Work Done (2026-07, cont.) — FlintAI activated on Emergent key (backend)
+- **FlintAI now runs on Google Gemini 3 Flash via the Flint backend using the Emergent universal key** (per user request "use emergent api key"). The Emergent key is NOT a Google key and CANNOT go in client JS, so it's kept server-side.
+  - Backend: added `POST /api/ai/chat` in `server.py` using `emergentintegrations` `LlmChat(...).with_model("gemini","gemini-3-flash-preview")`. Per-session in-memory `LlmChat` map keyed by `session_id` gives multi-turn memory. Accepts `{session_id, message, system, images[]}` (images = raw base64 → `ImageContent`). `EMERGENT_LLM_KEY` added to `backend/.env`. `emergentintegrations==0.2.0` in requirements.
+  - Frontend: `pages/flintai.html` now POSTs to relative `/api/ai/chat` (removed the Groq/Google-key + worker code; removed `buildGeminiPayload`/`fetchKeys`). Keeps the fake word-by-word streaming + session sidebar; sends the persona as `system` on the first turn of each session.
+  - Verified live (curl + UI): text ("Hello from FlintAI."), multi-turn memory (Turn 2 recalled + uppercased prior reply), vision ("A red circle." for a generated PNG), and the UI (bot replied "PONG"). Image rules saved to `/app/image_testing.md`.
+  - ⚠️ **Deployment caveat**: this needs the backend. It works in the Emergent preview and on an Emergent deployment. On a PURE-STATIC Vercel deploy of `flin.space` there is no `/api` backend, so the AI tab won't work there — either deploy via Emergent (includes backend) or revert FlintAI to the client-side key-proxy worker for Vercel-static.
+  - Note: the Emergent key is server-side/never exposed, so the earlier "restrict the Google key to flin.space + quota" guidance is moot here. Emergent-key usage deducts from the universal-key balance (top up via Profile → Manage plan → Universal Key).
+
 ## Work Done (2026-07, cont.) — domain switch, Open-in-new-tab, leave-guard
 - **L1nk domain** switched from `fl1.space` → **`flin.space`** (user now hosts the domain on Vercel). Updated `pages/link.html` (`DOMAIN` const + on-page copy).
 - **L1nk "Open" button** now always opens the generated link in a **new browser tab** (`window.open(url,'_blank','noopener')`) instead of navigating inside the Flint site/pr0xy.
