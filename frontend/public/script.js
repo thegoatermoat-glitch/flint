@@ -1,3 +1,5 @@
+/* oxlint-disable no-undef */
+/* eslint-disable no-undef */
 /* global Notify, $scramjetLoadController, $scramjetLoadWorker, ScramjetController, BareMux */
 const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/wisp/";
 

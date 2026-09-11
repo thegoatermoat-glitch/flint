@@ -218,15 +218,7 @@
 
     openBtn.addEventListener("click", () => {
       if (!currentLink) return;
-      const url = "https://" + currentLink;
-      // Navigate the Flint pr0xy tab if we're inside the browser, else open a new tab.
-      try {
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: "navigate", url }, "*");
-          return;
-        }
-      } catch (e) {}
-      window.open(url, "_blank");
+      window.open("https://" + currentLink, "_blank", "noopener");
     });
 
     // Restore saved state on load

@@ -1,3 +1,5 @@
+/* oxlint-disable no-undef */
+/* eslint-disable no-undef */
 /* global importScripts, BareMux, registration, clients, $scramjetLoadWorker, ScramjetServiceWorker, ScramjetController */
 
 const ADBLOCK = {
