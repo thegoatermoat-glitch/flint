@@ -1,3 +1,4 @@
+/* global importScripts, BareMux, registration, clients, $scramjetLoadWorker, ScramjetServiceWorker, ScramjetController */
 
 const ADBLOCK = {
     blocked: [

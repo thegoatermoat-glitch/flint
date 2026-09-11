@@ -1,3 +1,4 @@
+/* global Notify, $scramjetLoadController, $scramjetLoadWorker, ScramjetController, BareMux */
 const localWispUrl = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/wisp/";
 
 // List of verified public wisp servers (checked working). The first is the

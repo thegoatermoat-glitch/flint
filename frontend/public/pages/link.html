@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flint - L1nk</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-start: #141417;
+      --bg-end: #09090b;
+      --panel: rgba(24, 24, 27, 0.6);
+      --text: #fafafa;
+      --soft: #a1a1aa;
+      --border: rgba(255, 255, 255, 0.06);
+      --accent: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body {
+      min-height: 100vh; width: 100vw; overflow-x: hidden;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      background: radial-gradient(circle at top, var(--bg-start), var(--bg-end) 80%);
+      color: var(--text);
+    }
+    .card {
+      width: 100%; max-width: 560px; background: var(--panel); backdrop-filter: blur(20px);
+      border: 1px solid var(--border); border-radius: 28px; padding: 40px 36px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: rise 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+      background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245,158,11,0.25);
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    .lede { color: var(--soft); margin-top: 12px; font-size: 0.98rem; line-height: 1.55; }
+
+    .link-display {
+      margin-top: 28px; display: flex; align-items: center; gap: 14px;
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 22px;
+    }
+    .link-display .globe { color: var(--accent); font-size: 1.3rem; }
+    #generated-link {
+      flex: 1; font-size: 1.45rem; font-weight: 700; letter-spacing: -0.01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: all;
+    }
+    #generated-link.placeholder { color: var(--soft); font-weight: 500; font-size: 1.1rem; }
+
+    .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+    button {
+      flex: 1; min-width: 130px; border: none; border-radius: 14px; padding: 16px 20px;
+      font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; gap: 10px;
+      transition: transform 0.15s ease, background-color 0.2s ease, opacity 0.2s ease;
+    }
+    button:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #1a1205; }
+    .btn-primary:hover:not(:disabled) { background: #fbbf24; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .cooldown {
+      margin-top: 22px; display: none; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 18px; color: var(--soft); font-size: 0.9rem;
+    }
+    .cooldown.show { display: flex; }
+    .cooldown .timer { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .bar { flex: 1; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .bar-fill { height: 100%; width: 0%; background: var(--accent); transition: width 1s linear; }
+
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #fafafa; color: #09090b; padding: 12px 22px; border-radius: 12px;
+      font-weight: 600; font-size: 0.9rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .hint { margin-top: 22px; color: var(--soft); font-size: 0.8rem; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="card" data-testid="link-generator-card">
+    <span class="badge"><i class="fa-solid fa-bolt"></i> Fr35h L1nk</span>
+    <h1>Get a fresh 5-letter l1nk</h1>
+    <p class="lede">Spin up a brand-new address on <strong>fl1.space</strong> that opens Flint. Always 5 letters, always starts with an <strong>f</strong> &mdash; just like <em>flint</em>. Limited to one new l1nk every 5 minutes.</p>
+
+    <div class="link-display">
+      <i class="fa-solid fa-globe globe"></i>
+      <span id="generated-link" class="placeholder" data-testid="generated-link">Tap generate to get your l1nk&hellip;</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="generate-btn" data-testid="generate-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
+      <button class="btn-ghost" id="copy-btn" data-testid="copy-btn" disabled><i class="fa-regular fa-copy"></i> Copy</button>
+      <button class="btn-ghost" id="open-btn" data-testid="open-btn" disabled><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+    </div>
+
+    <div class="cooldown" id="cooldown" data-testid="cooldown">
+      <i class="fa-regular fa-clock"></i>
+      <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+      <span>Next l1nk in <span class="timer" id="timer" data-testid="cooldown-timer">5:00</span></span>
+    </div>
+
+    <p class="hint">Your current l1nk is saved on this device. If a l1nk ever gets bl0ck3d, wait for the cooldown and generate a new one.</p>
+  </div>
+
+  <div class="toast" id="toast" data-testid="toast">Copied!</div>
+
+  <script>
+    const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+    const DOMAIN = "fl1.space";
+    const LS_LINK = "flint_link_current";
+    const LS_TIME = "flint_link_last";
+
+    const $ = (id) => document.getElementById(id);
+    const linkEl = $("generated-link");
+    const genBtn = $("generate-btn");
+    const copyBtn = $("copy-btn");
+    const openBtn = $("open-btn");
+    const cooldownEl = $("cooldown");
+    const timerEl = $("timer");
+    const barFill = $("bar-fill");
+
+    let currentLink = localStorage.getItem(LS_LINK) || "";
+    let cooldownInterval = null;
+
+    function randomSub() {
+      const letters = "abcdefghijklmnopqrstuvwxyz";
+      let sub = "f"; // always starts with f, total 5 letters
+      for (let i = 0; i < 4; i++) sub += letters[Math.floor(Math.random() * letters.length)];
+      return sub;
+    }
+
+    function showLink(link) {
+      currentLink = link;
+      linkEl.textContent = link;
+      linkEl.classList.remove("placeholder");
+      copyBtn.disabled = false;
+      openBtn.disabled = false;
+    }
+
+    function toast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.classList.remove("show"), 1600);
+    }
+
+    function fmt(ms) {
+      const total = Math.max(0, Math.ceil(ms / 1000));
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+
+    function startCooldown() {
+      cooldownEl.classList.add("show");
+      genBtn.disabled = true;
+      const tick = () => {
+        const last = parseInt(localStorage.getItem(LS_TIME) || "0", 10);
+        const remaining = last + COOLDOWN_MS - Date.now();
+        if (remaining <= 0) {
+          endCooldown();
+          return;
+        }
+        timerEl.textContent = fmt(remaining);
+        barFill.style.width = (100 - (remaining / COOLDOWN_MS) * 100).toFixed(1) + "%";
+      };
+      tick();
+      cooldownInterval = setInterval(tick, 1000);
+    }
+
+    function endCooldown() {
+      clearInterval(cooldownInterval);
+      cooldownInterval = null;
+      cooldownEl.classList.remove("show");
+      genBtn.disabled = false;
+      genBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate';
+    }
+
+    function isCoolingDown() {
+      const last = parseInt(localStorage.getItem(LS_TIME) || "0", 10);
+      return Date.now() - last < COOLDOWN_MS;
+    }
+
+    genBtn.addEventListener("click", () => {
+      if (isCoolingDown()) return;
+      const link = `${randomSub()}.${DOMAIN}`;
+      localStorage.setItem(LS_LINK, link);
+      localStorage.setItem(LS_TIME, Date.now().toString());
+      showLink(link);
+      toast("New l1nk ready!");
+      startCooldown();
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      if (!currentLink) return;
+      const url = "https://" + currentLink;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = url; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); } catch (e2) {}
+        ta.remove();
+      }
+      toast("Copied to clipboard");
+    });
+
+    openBtn.addEventListener("click", () => {
+      if (!currentLink) return;
+      const url = "https://" + currentLink;
+      // Navigate the Flint pr0xy tab if we're inside the browser, else open a new tab.
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: "navigate", url }, "*");
+          return;
+        }
+      } catch (e) {}
+      window.open(url, "_blank");
+    });
+
+    // Restore saved state on load
+    if (currentLink) showLink(currentLink);
+    if (isCoolingDown()) startCooldown();
+  </script>
+</body>
+</html>
