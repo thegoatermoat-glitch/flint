@@ -253,9 +253,16 @@ function fixGameContentType(url, resp) {
 self.addEventListener("message", ({ data }) => {
     if (data.type === "config") {
         if (data.wispurl) {
+            const changed = data.wispurl !== wispConfig.wispurl;
             wispConfig.wispurl = data.wispurl;
             console.log("SW: Received wispurl", data.wispurl);
             currentServerStartTime = Date.now();
+            // Live switch: drop the existing bare client so the next fetch
+            // reconnects through the newly-selected wisp server (no page reload).
+            if (changed && scramjet) {
+                scramjet.client = null;
+                scramjet.connection = null;
+            }
         }
         if (data.servers && data.servers.length > 0) {
             wispConfig.servers = data.servers;

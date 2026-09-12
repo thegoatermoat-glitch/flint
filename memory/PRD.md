@@ -92,6 +92,13 @@ User uploaded `flnt-main.zip` (the "Flint" web proxy/unblocker — Scramjet-base
 ## Backlog additions
 - P1: user to point the FlintAI key-proxy worker at a Google Gemini API key (or set GEMINI_API_KEY) to activate the AI.
 
+## Work Done (2026-07, cont.) — pr0xy auto-recovery + C4ll fallback ("tls handshake eof")
+- Diagnosed the reported `Scramjet Fetch Error … tls handshake eof`: the WISP relay's TLS to a target intermittently EOFs (site blocks datacenter IPs / strict TLS). Proxy itself is healthy (example/google/youtube load fine); failures are per-target & intermittent. Reproduced on `8x8.vc` and on the C4ll Jitsi host.
+- **Auto server-failover in the main browser** (`script.js`): the frame `load` handler now detects the Scramjet fetch-error page (same-origin read) and calls `handleProxyFailure()` → shows a friendly "Site didn't load — trying <server>…" toast, switches WISP **live** to the next server (`switchWispLive` → SW `config` msg, no full reload), and re-navigates. Cycles through all servers; if all fail, shows a recovery screen (`showProxyErrorUI`) with **Retry / Change pr0xy server / Open in new tab** buttons (data-testids: proxy-error-retry/settings/newtab). `handleSubmit` resets the failover counter + hides the error box; success clears it. Verified no false-trigger on good pages.
+- **SW live wisp switch** (`sw.js`): the `config` message handler now drops `scramjet.client`/`connection` when `wispurl` changes so the next fetch reconnects through the new server without a page reload.
+- **C4ll multi-instance fallback** (`calling.html`): Jitsi now tries `vc.autistici.org → meet.jit.si → meet.ffmuc.net → jitsi.member.fsf.org` (same global room), each routed through the pr0xy, with a 15s watchdog + error-page detection; auto-advances to the next on failure and finally shows a fallback with **"Open in new tab" + "Try again"** (data-testid `call-retry`). Verified: container/iframe/retry present, "Connecting…" shown, zero JS errors.
+- Lint clean (0 errors) on script.js/sw.js.
+
 ## Work Done (2026-07, cont.) — FlintAI activated on Emergent key (backend)
 - **FlintAI now runs on Google Gemini 3 Flash via the Flint backend using the Emergent universal key** (per user request "use emergent api key"). The Emergent key is NOT a Google key and CANNOT go in client JS, so it's kept server-side.
   - Backend: added `POST /api/ai/chat` in `server.py` using `emergentintegrations` `LlmChat(...).with_model("gemini","gemini-3-flash-preview")`. Per-session in-memory `LlmChat` map keyed by `session_id` gives multi-turn memory. Accepts `{session_id, message, system, images[]}` (images = raw base64 → `ImageContent`). `EMERGENT_LLM_KEY` added to `backend/.env`. `emergentintegrations==0.2.0` in requirements.

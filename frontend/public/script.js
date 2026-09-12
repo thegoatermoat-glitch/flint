@@ -340,11 +340,27 @@ function createTab(makeActive = true) {
     });
 
     frame.frame.addEventListener('load', () => {
+        // Detect a Scramjet/WISP fetch-failure page (e.g. "tls handshake eof")
+        // and auto-recover by retrying on another pr0xy server.
+        if (tab.url && tab.url.startsWith('http')) {
+            try {
+                const body = frame.frame.contentWindow.document.body;
+                const txt = (body ? body.innerText : '').trim();
+                if (txt.startsWith('Scramjet Fetch Error') || /tls handshake eof|hyper_util::client/i.test(txt)) {
+                    handleProxyFailure(tab);
+                    return;
+                }
+            } catch (e) { /* same-origin read failed: assume the page is fine */ }
+        }
+
+        tab.failover = 0; // successful load
         tab.loading = false;
         clearTimeout(tab.skipTimeout);
 
         if (tab.id === activeTabId) {
             showIframeLoading(false);
+            const err = document.getElementById('error');
+            if (err) err.style.display = 'none';
         }
 
         try {
@@ -477,11 +493,70 @@ function handleSubmit(url) {
             ? `https://${input}` 
             : `${engineBase}${encodeURIComponent(input)}`;
     }
-    
+
+    tab.failover = 0; // fresh user navigation resets the failover counter
+    const errBox = document.getElementById('error');
+    if (errBox) errBox.style.display = 'none';
     tab.loading = true;
     showIframeLoading(true, input);
     updateLoadingBar(tab, 10);
     tab.frame.go(input);
+}
+
+// Switch the active wisp server live (no page reload): persist it + tell the
+// service worker, which drops its bare client so the next fetch reconnects.
+function switchWispLive(url) {
+    localStorage.setItem('proxServer', url);
+    navigator.serviceWorker.controller?.postMessage({ type: 'config', wispurl: url });
+}
+
+// Called when a page renders the Scramjet "tls handshake eof" / fetch-error
+// screen. Automatically retries the same URL on the next pr0xy server, cycling
+// through the list, then shows a friendly recovery screen if all fail.
+function handleProxyFailure(tab) {
+    const servers = getAllWispServers().map(s => s.url);
+    const current = localStorage.getItem('proxServer') ?? DEFAULT_WISP;
+    tab.failover = (tab.failover || 0) + 1;
+
+    if (tab.failover <= servers.length && servers.length > 1) {
+        const curIdx = servers.indexOf(current);
+        const next = servers[(curIdx + 1) % servers.length] || current;
+        if (next && next !== current) {
+            const name = getAllWispServers().find(s => s.url === next)?.name || 'another server';
+            notify('info', 'Reconnecting', `Site didn't load — trying ${name}…`);
+            switchWispLive(next);
+        } else {
+            notify('info', 'Retrying', `Site didn't load — retrying…`);
+        }
+        if (tab.id === activeTabId) showIframeLoading(true, tab.url);
+        const url = tab.url;
+        setTimeout(() => { try { tab.frame.go(url); } catch (e) {} }, 900);
+    } else {
+        tab.failover = 0;
+        tab.loading = false;
+        if (tab.id === activeTabId) {
+            showIframeLoading(false);
+            showProxyErrorUI(tab.url);
+        }
+    }
+}
+
+function showProxyErrorUI(url) {
+    const err = document.getElementById('error');
+    if (!err) return;
+    const btnCss = "margin-top:8px;padding:9px 16px;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:all .15s;";
+    err.querySelector('.message-content').innerHTML = `
+        <h1>Couldn't load this site</h1>
+        <p id="error-message">The page didn't respond through any pr0xy server. The site may be bl0ck1ng pr0xies right now — try again, switch server, or open it in a new tab.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+          <button id="err-retry" data-testid="proxy-error-retry" style="${btnCss}">Retry</button>
+          <button id="err-settings" data-testid="proxy-error-settings" style="${btnCss}">Change pr0xy server</button>
+          <button id="err-newtab" data-testid="proxy-error-newtab" style="${btnCss}">Open in new tab</button>
+        </div>`;
+    err.style.display = 'flex';
+    document.getElementById('err-retry').onclick = () => { err.style.display = 'none'; handleSubmit(url); };
+    document.getElementById('err-settings').onclick = () => { err.style.display = 'none'; openSettings(); };
+    document.getElementById('err-newtab').onclick = () => window.open(url, '_blank', 'noopener');
 }
 
 function updateLoadingBar(tab, percent) {
