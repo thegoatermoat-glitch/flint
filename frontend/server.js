@@ -29,6 +29,7 @@ const MIME = {
   ".woff2": "font/woff2",
   ".mp3": "audio/mpeg",
   ".wav": "audio/wav",
+  ".mp4": "video/mp4",
   ".md": "text/plain; charset=utf-8",
 };
 
